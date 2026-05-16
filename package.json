@@ -1,0 +1,14 @@
+{
+  "name": "pink-carousel-bot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Renders the daily Pink Media Instagram carousel, uploads to Cloudinary, and queues it in Make for auto-publish.",
+  "main": "render.js",
+  "scripts": {
+    "setup": "npm install && npx playwright install --with-deps chromium",
+    "render": "node render.js"
+  },
+  "dependencies": {
+    "playwright": "^1.60.0"
+  }
+}

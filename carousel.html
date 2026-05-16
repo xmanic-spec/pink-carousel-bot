@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0E0E12;--ink:#F6F5F4;--muted:#9A99A4;--pink:#FF2E88;--pad:92px}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:1080px}
+  body{background:#27272d;font-family:"Heebo",sans-serif}
+  body.solo{background:var(--bg)}
+  body.solo .slide{display:none}
+  body.solo .slide.on{display:flex}
+  .slide{position:relative;width:1080px;height:1350px;background:var(--bg);color:var(--ink);overflow:hidden;padding:var(--pad);display:flex;flex-direction:column}
+  .slide::before{content:"";position:absolute;inset:0;background:radial-gradient(820px 620px at 88% -8%, rgba(255,46,136,.20), transparent 60%),radial-gradient(700px 700px at -10% 110%, rgba(255,46,136,.08), transparent 55%);pointer-events:none}
+  .grain{position:absolute;inset:0;opacity:.05;mix-blend-mode:overlay;pointer-events:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>")}
+  .edge{position:absolute;top:var(--pad);bottom:var(--pad);right:0;width:6px;background:var(--pink);border-radius:6px}
+  .top{display:flex;justify-content:space-between;align-items:center;position:relative;z-index:2}
+  .kicker{font-family:"Space Mono",monospace;font-size:26px;letter-spacing:.2em;text-transform:uppercase;color:var(--pink)}
+  .count{font-family:"Space Mono",monospace;font-size:26px;letter-spacing:.14em;color:var(--muted);direction:ltr}
+  .count b{color:var(--ink)}
+  .body{flex:1;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:2}
+  .idx{position:absolute;left:-26px;bottom:-120px;z-index:1;font-family:"Space Mono",monospace;font-weight:700;font-size:430px;line-height:1;color:transparent;-webkit-text-stroke:2px rgba(255,46,136,.20);user-select:none}
+  .eyebrow{font-size:34px;font-weight:700;color:var(--pink);margin-bottom:24px}
+  h1{font-size:120px;font-weight:900;line-height:1.04;letter-spacing:-.015em}
+  h2{font-size:94px;font-weight:800;line-height:1.08;letter-spacing:-.01em}
+  mark{background:none;color:var(--pink);position:relative;white-space:nowrap}
+  mark::after{content:"";position:absolute;right:0;left:0;bottom:.06em;height:.16em;background:var(--pink);opacity:.28;border-radius:3px}
+  .sub{margin-top:34px;font-size:46px;font-weight:400;color:var(--muted);line-height:1.42;max-width:880px}
+  .sub strong{color:var(--ink);font-weight:700}
+  .foot{display:flex;justify-content:space-between;align-items:center;position:relative;z-index:2;padding-top:30px;border-top:1px solid rgba(255,255,255,.08)}
+  .brand{display:flex;align-items:center;gap:16px;font-size:31px;font-weight:700}
+  .brand .handle{display:block;direction:ltr;unicode-bidi:isolate;text-align:right}
+  .brand small{display:block;font-size:22px;font-weight:400;color:var(--muted)}
+  .dot{width:18px;height:18px;border-radius:50%;background:var(--pink);box-shadow:0 0 22px rgba(255,46,136,.7)}
+  .swipe{font-family:"Space Mono",monospace;font-size:26px;color:var(--muted);letter-spacing:.1em;display:flex;align-items:center;gap:12px}
+  .swipe .arr{color:var(--pink);font-size:34px}
+  .cta{background:var(--pink);color:#0E0E12}
+  .cta::before{background:radial-gradient(900px 700px at 12% 0%, rgba(255,255,255,.28), transparent 60%)}
+  .cta .kicker{color:#0E0E12}.cta .count{color:rgba(14,14,18,.55)}.cta .count b{color:#0E0E12}
+  .cta .edge{background:#0E0E12}.cta h1{font-size:106px}
+  .cta .eyebrow{color:#0E0E12}
+  .cta .sub{color:rgba(14,14,18,.78)}.cta .sub strong{color:#0E0E12}
+  .cta .foot{border-top:1px solid rgba(14,14,18,.22)}
+  .cta .brand{color:#0E0E12}.cta .brand small{color:rgba(14,14,18,.6)}
+  .cta .dot{background:#0E0E12;box-shadow:none}
+  .cta mark{color:#0E0E12}.cta mark::after{background:#0E0E12;opacity:.25}
+  .cta .idx{-webkit-text-stroke:2px rgba(14,14,18,.16)}
+  .pill{display:inline-block;margin-top:42px;background:#0E0E12;color:var(--pink);font-size:40px;font-weight:800;padding:26px 50px;border-radius:100px}
+</style>
+</head>
+<body>
+<script id="data" type="application/json">{"brand":{"kicker":"Pink Media","handle":"@bankhaltershay","sub":"פינק מדיה · שיווק דיגיטלי"},"slides":[]}</script>
+<div id="root"></div>
+<script>
+  (function(){
+    var D = JSON.parse(document.getElementById('data').textContent);
+    var B = D.brand || {}, slides = D.slides || [], total = slides.length;
+    var pad = function(n){ return (n<10?'0':'')+n; };
+    var root = document.getElementById('root');
+    slides.forEach(function(s, i){
+      var n = i+1, isCta = s.type === 'cta', isHook = s.type === 'hook';
+      var head = '<div class="grain"></div><span class="edge"></span>'
+        + '<div class="top"><div class="kicker">'+(s.kicker||B.kicker||'')+'</div>'
+        + '<div class="count"><b>'+pad(n)+'</b>/'+pad(total)+'</div></div>';
+      var titleTag = (isHook||isCta) ? 'h1' : 'h2';
+      var body = '<div class="body"><span class="idx">'+pad(n)+'</span>'
+        + (s.eyebrow ? '<div class="eyebrow">'+s.eyebrow+'</div>' : '')
+        + '<'+titleTag+'>'+(s.h||'')+'</'+titleTag+'>'
+        + (s.sub ? '<div class="sub">'+s.sub+'</div>' : '')
+        + (isCta && s.pill ? '<span class="pill">'+s.pill+'</span>' : '')
+        + '</div>';
+      var foot = '<div class="foot"><div class="brand"><span class="dot"></span>'
+        + '<div><span class="handle">'+(B.handle||'')+'</span><small>'+(B.sub||'')+'</small></div></div>'
+        + (!isCta && n<total ? '<div class="swipe">החליקו<span class="arr">&#8592;</span></div>' : '')
+        + '</div>';
+      var div = document.createElement('div');
+      div.className = 'slide' + (isCta ? ' cta' : '');
+      div.id = 's'+n;
+      div.innerHTML = head + body + foot;
+      root.appendChild(div);
+    });
+    var h = location.hash.replace('#','');
+    if(h){ document.body.classList.add('solo'); var el=document.getElementById(h); if(el) el.classList.add('on'); }
+  })();
+</script>
+</body>
+</html>
