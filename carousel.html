@@ -13,12 +13,16 @@
   body.solo .slide{display:none}
   body.solo .slide.on{display:flex}
 
-  /* dark-only collage palettes (neon hit rotates daily) */
+  /* dark-only collage palettes (neon hit rotates daily, wide variety) */
   .t-ink{--base:#0B0A0E;--ink:#FFFFFF;--hit:#FF2E88}
   .t-cream{--base:#0C0D07;--ink:#F5FFE8;--hit:#C6FF1E}
   .t-acid{--base:#080A14;--ink:#EAFBFF;--hit:#27E5FF}
   .t-blue{--base:#04141A;--ink:#E9FFF8;--hit:#00E5A0}
   .t-sun{--base:#120A06;--ink:#FFF0E0;--hit:#FF8A1E}
+  .t-grape{--base:#0E0716;--ink:#F3E9FF;--hit:#B57BFF}
+  .t-fire{--base:#140706;--ink:#FFEDE9;--hit:#FF4D3D}
+  .t-cobalt{--base:#060A18;--ink:#E8EEFF;--hit:#4D7CFF}
+  .t-gold{--base:#0F0C04;--ink:#FFF6E0;--hit:#FFD23D}
 
   .slide{position:relative;width:1080px;height:1350px;overflow:hidden;display:flex;flex-direction:column;
     background:var(--base);color:var(--ink);font-family:"Heebo",sans-serif}
@@ -49,6 +53,10 @@
   .photo .duo2{position:absolute;inset:0;background:var(--base);mix-blend-mode:soft-light;opacity:.4}
   .photo.empty{display:flex;align-items:center;justify-content:center;background:var(--hit)}
   .photo.empty b{font-family:"Space Mono",monospace;font-size:300px;color:var(--base);opacity:.25}
+  /* real stock photo: natural, authentic, not stylized */
+  .photo.real .duo{opacity:.12}
+  .photo.real .duo2{opacity:.16;mix-blend-mode:normal;background:linear-gradient(180deg,transparent 55%,rgba(0,0,0,.45))}
+  .photo.real .img{filter:grayscale(0) contrast(1.05) saturate(1.06) brightness(1)}
   .tape{position:absolute;z-index:3;width:190px;height:52px;background:rgba(255,255,255,.28);transform:rotate(-22deg);
     top:8px;right:230px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
   .stamp{position:absolute;z-index:4;left:96px;top:330px;width:208px;height:208px;border:5px solid var(--hit);
@@ -77,8 +85,10 @@
   .brand .handle{direction:ltr;unicode-bidi:isolate}
   .brand small{display:block;font-size:17px;font-weight:700;opacity:.65;font-family:"Space Mono",monospace}
   .dot{width:22px;height:22px;background:var(--hit);transform:rotate(45deg)}
-  .swipe{font-family:"Space Mono",monospace;font-weight:700;font-size:25px;display:flex;align-items:center;gap:10px}
-  .swipe .a{color:var(--hit);font-size:32px}
+  .logo{height:60px;width:auto;display:block}
+  .swipehint{position:relative;z-index:6;display:flex;justify-content:flex-end;align-items:center;gap:10px;
+    padding:6px 78px 16px;font-family:"Space Mono",monospace;font-weight:700;font-size:25px;color:var(--ink);opacity:.72}
+  .swipehint .a{color:var(--hit);font-size:32px}
 
   /* CTA: dark + loud (no photo, but full collage energy) */
   .slide.cta .stage{flex:0 0 250px}
@@ -93,9 +103,11 @@
 <script>
   (function(){
     var D=JSON.parse(document.getElementById('data').textContent);
-    var THEMES=['t-ink','t-cream','t-acid','t-blue','t-sun'];
+    var THEMES=['t-ink','t-cream','t-acid','t-blue','t-sun','t-grape','t-fire','t-cobalt','t-gold'];
     var theme=THEMES.indexOf(D.theme)>=0?D.theme:'t-ink';
     var B=D.brand||{},S=D.slides||[],N=S.length,bg=D.bg||'';
+    var real=D.bgreal?' real':'';
+    var LOGO='https://res.cloudinary.com/duhfkgxer/image/upload/pink_carousel/pink_logo_main.png';
     var pad=function(n){return (n<10?'0':'')+n;};
     var STAMP=['HOT TAKE','תובנה','המהלך','דחוף','עכשיו','PINK'];
     var root=document.getElementById('root');
@@ -105,7 +117,7 @@
       div.className='slide '+theme+(isCta?' cta':'');
       div.id='s'+n;
       var photo = bg
-        ? '<div class="block"></div><div class="photo"><div class="img" style="background-image:url(\''+bg+'\')"></div><div class="duo"></div><div class="duo2"></div></div><div class="tape"></div>'
+        ? '<div class="block"></div><div class="photo'+real+'"><div class="img" style="background-image:url(\''+bg+'\')"></div><div class="duo"></div><div class="duo2"></div></div><div class="tape"></div>'
         : '<div class="block"></div><div class="photo empty"><b>'+pad(n)+'</b></div><div class="tape"></div>';
       div.innerHTML =
         '<div class="grain"></div><div class="halftone"></div><div class="idx">'+pad(n)+'</div>'
@@ -118,10 +130,11 @@
         + (s.sub?'<div class="sub">'+s.sub+'</div>':'')
         + (isCta&&s.pill?'<span class="pill">'+s.pill+'</span>':'')
         + '</div>'
+        + (!isCta&&n<N?'<div class="swipehint">החליקו<span class="a">&#8592;</span></div>':'')
         + '<div class="foot"><div class="brand"><span class="dot"></span>'
         + '<div><span class="handle">'+(B.handle||'@bankhaltershay')+'</span>'
         + '<small>'+(B.sub||'PINK MEDIA')+'</small></div></div>'
-        + (!isCta&&n<N?'<div class="swipe">החליקו<span class="a">&#8592;</span></div>':'<span class="swipe">'+pad(n)+' / '+pad(N)+'</span>')
+        + '<img class="logo" src="'+LOGO+'" alt="Pink">'
         + '</div>';
       root.appendChild(div);
     });

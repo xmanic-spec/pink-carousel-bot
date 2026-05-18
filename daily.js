@@ -79,6 +79,24 @@ async function genBackground(topic, accent) {
   return null;
 }
 
+// Real (non-AI) stock photo from Pexels. Never throws: returns a Cloudinary URL or null.
+async function genStockPhoto(query) {
+  const pk = process.env.PEXELS_API_KEY;
+  if (!pk) { console.log('photo: no PEXELS_API_KEY'); return null; }
+  try {
+    const r = await fetch('https://api.pexels.com/v1/search?orientation=portrait&size=large&per_page=20&query=' + encodeURIComponent(query), { headers: { Authorization: pk } });
+    const j = await r.json();
+    if (!r.ok || !j.photos || !j.photos.length) { console.log('photo: pexels ' + r.status + ' no results for ' + query); return null; }
+    const p = j.photos[Math.floor(Math.random() * j.photos.length)];
+    const src = (p.src && (p.src.portrait || p.src.large2x || p.src.large)) || '';
+    if (!src) { console.log('photo: no src'); return null; }
+    const buf = Buffer.from(await (await fetch(src)).arrayBuffer());
+    const url = await cloudinaryUpload(buf);
+    console.log('photo: pexels "' + query + '" ->', url);
+    return url;
+  } catch (e) { console.log('photo: pexels error ' + e.message); return null; }
+}
+
 (async () => {
   const j = await anthropic({
     model: 'claude-sonnet-4-6',
@@ -115,7 +133,7 @@ async function genBackground(topic, accent) {
   content.slides.forEach((sl) => { ['kicker', 'eyebrow', 'h', 'sub', 'pill'].forEach((k) => { if (sl[k] != null) sl[k] = clean(sl[k]); }); });
 
   // rotate visual theme by day-of-year so the feed never looks the same two days running
-  const THEMES = ['t-ink', 't-cream', 't-acid', 't-blue', 't-sun'];
+  const THEMES = ['t-ink', 't-cream', 't-acid', 't-blue', 't-sun', 't-grape', 't-fire', 't-cobalt', 't-gold'];
   const doy = Math.floor((Date.parse(date + 'T00:00:00Z') - Date.parse(date.slice(0, 4) + '-01-01T00:00:00Z')) / 86400000);
   content.theme = THEMES[((doy % THEMES.length) + THEMES.length) % THEMES.length];
   console.log('theme:', content.theme);
@@ -127,11 +145,18 @@ async function genBackground(topic, accent) {
     't-blue': 'teal and cyan technical glow on deep navy',
     't-sun': 'warm sunset orange, pink and purple haze',
   };
+  const PHOTO_Q = ['marketing team meeting in modern office', 'digital marketing analytics on a screen', 'business strategy whiteboard session', 'advertising creative team collaborating', 'startup founders working late at night', 'social media manager using smartphone closeup', 'data dashboard charts on a monitor', 'marketer presenting to executives in boardroom', 'designer working on laptop closeup', 'modern tech office team candid'];
   {
     const topic = String((content.slides[0] && content.slides[0].h) || content.caption)
       .replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 140);
+    const useReal = !!process.env.PEXELS_API_KEY && (doy % 2 === 0); // ~every other day: real photo
     try {
-      const bg = await genBackground(topic, ACCENT[content.theme] || 'high-contrast neon accents on near-black');
+      let bg = null;
+      if (useReal) {
+        bg = await genStockPhoto(PHOTO_Q[((doy % PHOTO_Q.length) + PHOTO_Q.length) % PHOTO_Q.length]);
+        if (bg) content.bgreal = true;
+      }
+      if (!bg) bg = await genBackground(topic, ACCENT[content.theme] || 'high-contrast neon accents on near-black');
       if (bg) content.bg = bg;
     } catch (err) { console.log('bg: skipped (' + err.message + ')'); }
   }

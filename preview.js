@@ -4,7 +4,7 @@ const date=process.argv[2], theme=process.argv[3]||'t-ink';
 const tpl=fs.readFileSync(path.join(__dirname,'carousel.html'),'utf8');
 const content=JSON.parse(fs.readFileSync(path.join(__dirname,'content',date+'.json'),'utf8'));
 content.theme=theme;
-const dataJson=JSON.stringify({theme:content.theme,bg:content.bg,brand:content.brand,slides:content.slides});
+const dataJson=JSON.stringify({theme:content.theme,bg:content.bg,bgreal:content.bgreal,brand:content.brand,slides:content.slides});
 const html=tpl.replace(/<script id="data" type="application\/json">[\s\S]*?<\/script>/,'<script id="data" type="application/json">'+dataJson.replace(/<\//g,'<\\/')+'</script>');
 const tmp=path.join(os.tmpdir(),'prev-'+theme+'.html'); fs.writeFileSync(tmp,html);
 (async()=>{
