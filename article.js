@@ -7,6 +7,22 @@
 // Model output is SENTINEL-delimited (not JSON) so large HTML never breaks parsing.
 const fs = require('fs');
 const path = require('path');
+const sharp = require('sharp');
+
+// Web-weight every image: max 1200px long edge, JPEG, step quality down until <=200KB.
+const MAX_BYTES = 200 * 1024;
+async function compress(buf) {
+  let base;
+  try { base = await sharp(buf).rotate().resize({ width: 1200, height: 1200, fit: 'inside', withoutEnlargement: true }).toBuffer(); }
+  catch (_) { base = buf; }
+  for (const q of [82, 72, 62, 52, 44, 36, 30]) {
+    let out;
+    try { out = await sharp(base).jpeg({ quality: q, mozjpeg: true }).toBuffer(); }
+    catch (_) { out = await sharp(base).jpeg({ quality: q }).toBuffer(); }
+    if (out.length <= MAX_BYTES) return out;
+  }
+  return await sharp(buf).resize({ width: 1000, fit: 'inside' }).jpeg({ quality: 34 }).toBuffer();
+}
 
 const date = process.argv[2] || new Date().toISOString().slice(0, 10);
 const FORCE_POST_ID = process.env.FORCE_POST_ID ? parseInt(process.env.FORCE_POST_ID, 10) : 0;
@@ -44,10 +60,11 @@ async function wp(method, p, body) {
   return j;
 }
 async function wpUploadBuffer(buf, filename, alt) {
+  const jpg = await compress(buf);
   const res = await fetch(WP_SITE + '/wp-json/wp/v2/media', {
     method: 'POST',
-    headers: { 'Authorization': authHeader, 'User-Agent': UA, 'Content-Type': 'image/png', 'Content-Disposition': 'attachment; filename="' + filename + '"' },
-    body: buf,
+    headers: { 'Authorization': authHeader, 'User-Agent': UA, 'Content-Type': 'image/jpeg', 'Content-Disposition': 'attachment; filename="' + filename.replace(/\.\w+$/, '') + '.jpg"' },
+    body: jpg,
   });
   if (!res.ok) throw new Error('media ' + res.status);
   const j = await res.json();
@@ -146,7 +163,8 @@ Write ONE article of 900-1200 words that gives real, usable value. Not a news re
 AI-ENGINE OPTIMIZED: open with a 1-2 sentence direct, quotable answer to the core question. Question-style H2s phrased the way people ask. Short self-contained citable paragraphs. Specific and factual; never invent statistics (only the provided source facts; the rest is reasoning/strategy).
 IRONCLAD: zero AI-writing tells. No em dash, no double hyphen, no "במילים אחרות", no generic openers, no rule-of-three padding. Do NOT add any generic "contact us" CTA paragraph.
 INTERNAL LINKS: weave at least 4 contextual internal links INTO the prose using only URLs from the link menu (pillar hub once, 1-2 sibling hubs where relevant, the most relevant service page, at most one soft work-with-us link). Descriptive anchors, never "כאן".
-IMAGES: put markers __IMG1__ (after the intro) and __IMG2__ (mid-article) on their own lines in the HTML.
+IMAGES: place __IMG1__ (after the intro) and __IMG2__ (mid-article), and __IMG3__ only if a third illustration genuinely helps, each on its own line in the HTML.
+TABLES: when a comparison, decision matrix, before/after, or step-by-step is clearer as a table, include one clean semantic HTML <table> with <thead> and <tbody> (no inline styles, no width attrs). Only when it truly improves readability; never a gratuitous table.
 RESPONSE FORMAT: output EXACTLY these blocks, each header alone on its line, NO JSON, NO code fences:
 <<TITLE>>
 (<=60 char specific H1)
@@ -160,6 +178,8 @@ RESPONSE FORMAT: output EXACTLY these blocks, each header alone on its line, NO 
 english image prompt ::: hebrew alt text
 <<IMG2>>
 english image prompt ::: hebrew alt text
+<<IMG3>>
+(optional, only if used) english image prompt ::: hebrew alt text
 <<FAQ>>
 question 1 ||| answer 1
 question 2 ||| answer 2
@@ -168,7 +188,7 @@ question 3 ||| answer 3
 (semantic HTML body: <p><h2><h3><ul><ol>; contains __IMG1__ and __IMG2__ and >=4 menu links; NO <h1>; NO inline styles; NO CTA paragraph)`;
   const usr = `Topic: ${topic}\nPillar: ${P.label}\nSource facts (do not invent beyond these):\n${sourceFacts}\n\nInternal link menu (use real URLs from here, >=4, contextual):\n${linkMenu}\n\nWrite it now.`;
 
-  const KEYS = ['TITLE', 'EXCERPT', 'FOCUSKW', 'DEK', 'IMG1', 'IMG2', 'FAQ', 'HTML'];
+  const KEYS = ['TITLE', 'EXCERPT', 'FOCUSKW', 'DEK', 'IMG1', 'IMG2', 'IMG3', 'FAQ', 'HTML'];
   let bl = parseBlocks(await anthropic({ model: 'claude-sonnet-4-6', max_tokens: 5000, system: SYS, messages: [{ role: 'user', content: usr }] }), KEYS);
   if (!bl.HTML || bl.HTML.length < 600 || !bl.TITLE) {
     bl = parseBlocks(await anthropic({ model: 'claude-sonnet-4-6', max_tokens: 5000, system: SYS, messages: [{ role: 'user', content: usr + '\n\nReturn the sentinel blocks exactly as specified.' }] }), KEYS);
@@ -179,18 +199,21 @@ question 3 ||| answer 3
   };
   if (!art.title || !art.html || art.html.length < 600) throw new Error('article too thin / unparseable');
   const parseImg = (s) => { const [p, a] = String(s || '').split(':::'); return { prompt: (p || '').trim(), alt: (a || '').trim() }; };
-  const I1 = parseImg(bl.IMG1), I2 = parseImg(bl.IMG2);
+  const IMGS = { 1: parseImg(bl.IMG1), 2: parseImg(bl.IMG2), 3: parseImg(bl.IMG3) };
   const faq = String(bl.FAQ || '').split('\n').map(l => l.split('|||')).filter(x => x.length === 2).map(x => ({ q: stripTells(x[0].trim()), a: stripTells(x[1].trim()) }));
 
-  // images
+  // images: only generate the markers the model actually placed in the body
   let featured = content.__featured || 0;
-  for (const [n, I] of [[1, I1], [2, I2]]) {
+  for (const n of [1, 2, 3]) {
     const mk = '__IMG' + n + '__';
+    if (!art.html.includes(mk)) continue;
+    const I = IMGS[n] || {};
+    if (!I.prompt) { art.html = art.html.replace(mk, ''); continue; }
     try {
-      const buf = await genImage(I.prompt || (P.label + ' concept'), '1536x1024');
+      const buf = await genImage(I.prompt, '1536x1024');
       if (!buf) { art.html = art.html.replace(mk, ''); continue; }
-      const up = await wpUploadBuffer(buf, date + '-' + n + '.png', I.alt || art.title);
-      if (n === 1) featured = up.id;
+      const up = await wpUploadBuffer(buf, date + '-' + n + '.jpg', I.alt || art.title);
+      if (n === 1 || !featured) featured = up.id;
       art.html = art.html.replace(mk, '<figure class="wp-block-image size-large"><img src="' + up.src + '" alt="' + esc(I.alt || art.title) + '" loading="lazy"/></figure>');
     } catch (e) { console.error('img' + n + ' skipped ' + e.message); art.html = art.html.replace(mk, ''); }
   }

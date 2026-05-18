@@ -9,6 +9,7 @@
     "render": "node render.js"
   },
   "dependencies": {
-    "playwright": "^1.60.0"
+    "playwright": "^1.60.0",
+    "sharp": "^0.33.5"
   }
 }

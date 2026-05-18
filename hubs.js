@@ -10,6 +10,20 @@ const WP_USER = process.env.WP_USER, WP_PASS = process.env.WP_APP_PASS;
 const UA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36';
 if (!AK || !WP_USER || !WP_PASS) { console.error('HUBS_SKIP: missing env'); process.exit(2); }
 const auth = 'Basic ' + Buffer.from(WP_USER + ':' + WP_PASS).toString('base64');
+const sharp = require('sharp');
+const MAX_BYTES = 200 * 1024;
+async function compress(buf) {
+  let base;
+  try { base = await sharp(buf).rotate().resize({ width: 1200, height: 1200, fit: 'inside', withoutEnlargement: true }).toBuffer(); }
+  catch (_) { base = buf; }
+  for (const q of [82, 72, 62, 52, 44, 36, 30]) {
+    let out;
+    try { out = await sharp(base).jpeg({ quality: q, mozjpeg: true }).toBuffer(); }
+    catch (_) { out = await sharp(base).jpeg({ quality: q }).toBuffer(); }
+    if (out.length <= MAX_BYTES) return out;
+  }
+  return await sharp(buf).resize({ width: 1000, fit: 'inside' }).jpeg({ quality: 34 }).toBuffer();
+}
 
 const HUBS = [
   { id: 858, cat: 10, label: 'AI ו-GEO', brief: 'איך מותגים מופיעים ונבחרים בתשובות של ChatGPT, Perplexity ו-AI Overviews של גוגל; GEO ו-AEO מול SEO; מדידת נוכחות במנועי AI.' },
@@ -45,7 +59,8 @@ async function genImage(prompt) {
   return null;
 }
 async function upload(buf, fn, alt) {
-  const r = await fetch(WP_SITE + '/wp-json/wp/v2/media', { method: 'POST', headers: { Authorization: auth, 'User-Agent': UA, 'Content-Type': 'image/png', 'Content-Disposition': 'attachment; filename="' + fn + '"' }, body: buf });
+  const jpg = await compress(buf);
+  const r = await fetch(WP_SITE + '/wp-json/wp/v2/media', { method: 'POST', headers: { Authorization: auth, 'User-Agent': UA, 'Content-Type': 'image/jpeg', 'Content-Disposition': 'attachment; filename="' + fn.replace(/\.\w+$/, '') + '.jpg"' }, body: jpg });
   if (!r.ok) throw new Error('media ' + r.status); const j = await r.json();
   try { await wp('POST', '/wp-json/wp/v2/media/' + j.id, { alt_text: alt, title: alt }); } catch (_) {}
   return { id: j.id, src: j.source_url };
@@ -81,6 +96,7 @@ This is the authoritative overview for the whole topic: 700-950 words, deep, gen
 AI-ENGINE OPTIMIZED: open with a 2-3 sentence direct definition/answer to "what is this and why it matters" (extractable by AI models). Question-style H2s. Short self-contained citable paragraphs. Specific, no invented statistics.
 IRONCLAD: zero AI-writing tells. No em dash, no double hyphen, no "במילים אחרות", no generic openers, no rule-of-three padding, NO generic "contact us" CTA paragraph.
 INTERNAL LINKS: weave 3-4 contextual links from the menu into the prose (sibling pillars + relevant service page), descriptive anchors.
+TABLES: if a comparison or decision matrix makes the overview clearer, include one clean semantic HTML <table> with <thead> and <tbody> (no inline styles, no width attrs). Only when it truly helps.
 RESPONSE FORMAT: output EXACTLY these blocks, each header alone on its line, NO JSON, NO code fences:
 <<TITLE>>
 (<=60 char H1)
