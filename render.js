@@ -50,8 +50,13 @@ async function uploadToCloudinary(buffer, hint) {
 
   const recordData = {
     caption: content.caption,
-    posted: false,
+    posted: false,            // Instagram
+    posted_li: false,         // LinkedIn
+    posted_fb: false,         // Facebook page
     posted_at: '1970-01-01 00:00',
+    pub_ig: content.pub_ig || 1110,
+    pub_li: content.pub_li || 1140,
+    pub_fb: content.pub_fb || 1170,
     date: date,
   };
   for (let i = 1; i <= 7; i++) {

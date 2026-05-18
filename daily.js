@@ -173,6 +173,18 @@ async function genStockPhoto(query) {
     } catch (err) { console.log('bg: skipped (' + err.message + ')'); }
   }
 
+  // Human-feel publish times (Israel local minutes-from-midnight): vary daily within
+  // 18:00-21:00, never the same exact minute, and stagger the networks so they never
+  // post simultaneously (a dead automation giveaway).
+  function seeded(str) { let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return () => (h = Math.imul(h ^ (h >>> 15), 2246822519), (h >>> 0) / 4294967296); }
+  const rnd = seeded(date + 'pinkmedia');
+  const igMin = 18 * 60 + Math.floor(rnd() * 90);                 // 18:00 - 19:30
+  const liMin = Math.min(igMin + 18 + Math.floor(rnd() * 42), 21 * 60); // +18..59m
+  const fbMin = Math.min(liMin + 16 + Math.floor(rnd() * 40), 21 * 60); // after LI
+  content.pub_ig = igMin; content.pub_li = liMin; content.pub_fb = fbMin;
+  const hm = (m) => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+  console.log('publish (Israel):', 'IG ' + hm(igMin), 'LI ' + hm(liMin), 'FB ' + hm(fbMin));
+
   const dir = path.join(__dirname, 'content');
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, date + '.json'), JSON.stringify(content, null, 2));
