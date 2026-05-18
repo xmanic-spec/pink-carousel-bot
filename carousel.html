@@ -17,6 +17,8 @@
     padding:96px;color:var(--ink);background:var(--bg);font-family:var(--font)}
   .bgimg{position:absolute;inset:0;background-size:cover;background-position:center;z-index:0}
   .scrim{position:absolute;inset:0;z-index:1;background:var(--scrim)}
+  .slide.has-bg .scrim{background:linear-gradient(180deg,rgba(7,7,12,.52) 0%,rgba(7,7,12,.60) 42%,rgba(7,7,12,.84) 100%)}
+  .slide.has-bg.cta .scrim{background:linear-gradient(180deg,rgba(7,7,12,.30),rgba(7,7,12,.52))}
   .deco{position:absolute;inset:0;z-index:1;pointer-events:none}
   .grain{position:absolute;inset:0;z-index:2;opacity:.06;mix-blend-mode:overlay;pointer-events:none;
     background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/></filter><rect width='240' height='240' filter='url(%23n)'/></svg>")}
@@ -109,11 +111,11 @@
     S.forEach(function(s,i){
       var n=i+1,isCta=s.type==='cta',big=(s.type==='hook'||isCta);
       var div=document.createElement('div');
-      div.className='slide '+theme+(isCta?' cta':'')+(s.type==='hook'?' hook':'');
+      div.className='slide '+theme+(isCta?' cta':'')+(s.type==='hook'?' hook':'')+(bg?' has-bg':'');
       div.id='s'+n;
       var bgLayer=bg?'<div class="bgimg" style="background-image:url(\''+bg+'\')"></div><div class="scrim"></div>':'';
       div.innerHTML=bgLayer
-        +'<div class="deco"></div><div class="grain"></div><span class="edge"></span>'
+        +(bg?'':'<div class="deco"></div>')+'<div class="grain"></div><span class="edge"></span>'
         +'<div class="top"><div class="kicker">'+(s.kicker||B.kicker||'')+'</div>'
         +'<div class="count"><b>'+pad(n)+'</b>/'+pad(N)+'</div></div>'
         +'<div class="body"><span class="idx">'+pad(n)+'</span>'

@@ -40,6 +40,45 @@ async function anthropic(body) {
   return j;
 }
 
+async function cloudinaryUpload(buffer) {
+  const form = new FormData();
+  form.append('file', new Blob([buffer], { type: 'image/png' }), 'bg.png');
+  form.append('upload_preset', 'fi604fpo');
+  const res = await fetch('https://api.cloudinary.com/v1_1/duhfkgxer/image/upload', { method: 'POST', body: form });
+  const j = await res.json();
+  if (!j.secure_url) throw new Error('Cloudinary bg upload failed: ' + JSON.stringify(j));
+  return j.secure_url;
+}
+
+// Generate an abstract topical background via OpenAI gpt-image-2. Never throws: returns
+// a Cloudinary URL or null so a bad image day degrades to a plain themed slide.
+async function genBackground(topic, accent) {
+  const okey = process.env.OPENAI_API_KEY;
+  if (!okey) { console.log('bg: no OPENAI_API_KEY, skipping'); return null; }
+  const prompt = 'Abstract premium editorial background image for a marketing carousel about: ' + topic + '. Dark moody atmosphere, ' + accent + ', cinematic depth, soft volumetric light, subtle geometric shapes and texture, lots of empty negative space. ABSOLUTELY NO text, NO letters, NO words, NO numbers, NO logos, NO charts, NO UI. Vertical poster background only.';
+  for (const model of ['gpt-image-2', 'gpt-image-1.5', 'gpt-image-1']) {
+    try {
+      const res = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + okey, 'content-type': 'application/json' },
+        body: JSON.stringify({ model, prompt, size: '1024x1536', n: 1 }),
+      });
+      const j = await res.json();
+      if (!res.ok) { console.log('bg: ' + model + ' -> ' + res.status + ' ' + JSON.stringify(j).slice(0, 160)); continue; }
+      const d = (j.data && j.data[0]) || {};
+      let buf = null;
+      if (d.b64_json) buf = Buffer.from(d.b64_json, 'base64');
+      else if (d.url) buf = Buffer.from(await (await fetch(d.url)).arrayBuffer());
+      if (!buf) { console.log('bg: ' + model + ' no image in response'); continue; }
+      const url = await cloudinaryUpload(buf);
+      console.log('bg: generated with ' + model + ' ->', url);
+      return url;
+    } catch (err) { console.log('bg: ' + model + ' error ' + err.message); }
+  }
+  console.log('bg: all image models failed, proceeding without background');
+  return null;
+}
+
 (async () => {
   const j = await anthropic({
     model: 'claude-sonnet-4-6',
@@ -60,6 +99,22 @@ async function anthropic(body) {
   const doy = Math.floor((Date.parse(date + 'T00:00:00Z') - Date.parse(date.slice(0, 4) + '-01-01T00:00:00Z')) / 86400000);
   content.theme = THEMES[((doy % THEMES.length) + THEMES.length) % THEMES.length];
   console.log('theme:', content.theme);
+
+  // AI background per topic (dark themes only; t-cream stays a clean light editorial look)
+  const ACCENT = {
+    't-ink': 'electric magenta and cyan accents on near-black',
+    't-acid': 'vivid magenta, violet and warm orange energy',
+    't-blue': 'teal and cyan technical glow on deep navy',
+    't-sun': 'warm sunset orange, pink and purple haze',
+  };
+  if (content.theme !== 't-cream') {
+    const topic = String((content.slides[0] && content.slides[0].h) || content.caption)
+      .replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 140);
+    try {
+      const bg = await genBackground(topic, ACCENT[content.theme] || 'subtle brand accents');
+      if (bg) content.bg = bg;
+    } catch (err) { console.log('bg: skipped (' + err.message + ')'); }
+  }
 
   const dir = path.join(__dirname, 'content');
   fs.mkdirSync(dir, { recursive: true });
