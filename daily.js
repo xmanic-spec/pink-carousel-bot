@@ -98,12 +98,25 @@ async function genStockPhoto(query) {
 }
 
 (async () => {
+  const doy = Math.floor((Date.parse(date + 'T00:00:00Z') - Date.parse(date.slice(0, 4) + '-01-01T00:00:00Z')) / 86400000);
+  // variety: collect recent posts' topics so the model does not repeat itself
+  let avoid = [];
+  try {
+    const cdir = path.join(__dirname, 'content');
+    const files = fs.existsSync(cdir) ? fs.readdirSync(cdir).filter(f => /^\d{4}-\d\d-\d\d\.json$/.test(f)).sort().slice(-6) : [];
+    avoid = files.map(f => { try { const c = JSON.parse(fs.readFileSync(path.join(cdir, f))); return String((c.slides && c.slides[0] && c.slides[0].h) || c.caption || '').replace(/<[^>]+>/g, '').trim().slice(0, 90); } catch (_) { return ''; } }).filter(Boolean);
+  } catch (_) {}
+  const avoidTxt = avoid.length ? ' Do NOT repeat the subject or angle of these recent posts: ' + avoid.map(a => '"' + a + '"').join('; ') + '. Pick a clearly different subject and vary between AI, SEO and PPC across days.' : '';
+  const winDay = (doy % 6 === 0); // roughly once a week: a real client-win post
+  const userMsg = winDay
+    ? 'Today is ' + date + '. Pink Media is a digital marketing agency, official site https://pinkmedia.co.il . Use web_search to find ONE real, published client success/result that actually appears on pinkmedia.co.il (real metric or case study, e.g. ranking/traffic/leads growth). Build the 7-slide carousel as a confident, classy client-win story per the system rules (slide 1 hook = the headline result, middle = what was done and the impact, slide 7 = CTA). Use ONLY real figures verified on the site. If you cannot verify a real client result, instead produce the normal post about the single strongest AI/SEO/PPC news from the last 3 days.' + avoidTxt + ' Output ONLY the JSON.'
+    : 'Today is ' + date + '. Research the last 3 days of AI, SEO and PPC marketing news and choose the single strongest story for the audience.' + avoidTxt + ' Output ONLY the content JSON described in the system prompt.';
   const j = await anthropic({
     model: 'claude-sonnet-4-6',
     max_tokens: 4000,
     system: SYSTEM,
-    tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 6 }],
-    messages: [{ role: 'user', content: 'Today is ' + date + '. Research the last 3 days of AI, SEO and PPC marketing news, choose the single strongest story for the audience, and output ONLY the content JSON described in the system prompt.' }],
+    tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 8 }],
+    messages: [{ role: 'user', content: userMsg }],
   });
   const text = (j.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
   function extract(t) { const a = t.indexOf('{'), b = t.lastIndexOf('}'); return (a < 0 || b <= a) ? null : t.slice(a, b + 1); }
@@ -134,7 +147,6 @@ async function genStockPhoto(query) {
 
   // rotate visual theme by day-of-year so the feed never looks the same two days running
   const THEMES = ['t-ink', 't-cream', 't-acid', 't-blue', 't-sun', 't-grape', 't-fire', 't-cobalt', 't-gold'];
-  const doy = Math.floor((Date.parse(date + 'T00:00:00Z') - Date.parse(date.slice(0, 4) + '-01-01T00:00:00Z')) / 86400000);
   content.theme = THEMES[((doy % THEMES.length) + THEMES.length) % THEMES.length];
   console.log('theme:', content.theme);
 
