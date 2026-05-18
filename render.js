@@ -26,6 +26,16 @@ async function uploadToCloudinary(buffer, hint) {
   return j.secure_url;
 }
 
+async function uploadPdfToCloudinary(buffer, hint) {
+  const form = new FormData();
+  form.append('file', new Blob([buffer], { type: 'application/pdf' }), hint + '.pdf');
+  form.append('upload_preset', CLD_PRESET);
+  const res = await fetch('https://api.cloudinary.com/v1_1/' + CLD_CLOUD + '/auto/upload', { method: 'POST', body: form });
+  const j = await res.json();
+  if (!j.secure_url) throw new Error('Cloudinary PDF upload failed: ' + JSON.stringify(j));
+  return j.secure_url;
+}
+
 (async () => {
   const token = process.env.MAKE_API_TOKEN;
   if (!token) throw new Error('MAKE_API_TOKEN env var is required');
@@ -58,12 +68,52 @@ async function uploadToCloudinary(buffer, hint) {
     pub_li: content.pub_li || 1140,
     pub_fb: content.pub_fb || 1170,
     date: date,
+    caption_en: (content.en && content.en.caption) || content.caption,
+    pdf_url: '',
   };
   for (let i = 1; i <= 7; i++) {
     const buf = await page.locator('#s' + i).screenshot({ type: 'jpeg', quality: 84 });
     recordData['img' + i] = await uploadToCloudinary(buf, date + '-' + i);
     console.log('slide', i, '->', recordData['img' + i]);
   }
+
+  // English LinkedIn carousel: render English slides -> single 7-page PDF (the native
+  // LinkedIn swipe carousel) -> Cloudinary. Never blocks the Hebrew carousel/queue.
+  if (content.en && Array.isArray(content.en.slides) && content.en.slides.length === 7) {
+    try {
+      const enData = JSON.stringify({ theme: content.theme, bg: content.bg, bgreal: content.bgreal, brand: content.brand, slides: content.en.slides, lang: 'en' });
+      const enHtml = tpl.replace(
+        /<script id="data" type="application\/json">[\s\S]*?<\/script>/,
+        '<script id="data" type="application/json">' + enData.replace(/<\//g, '<\\/') + '</script>'
+      );
+      const enTmp = path.join(os.tmpdir(), 'carousel-en-' + date + '.html');
+      fs.writeFileSync(enTmp, enHtml);
+      const ep = await browser.newPage({ viewport: { width: 1080, height: 1350 }, deviceScaleFactor: 1 });
+      await ep.goto('file://' + enTmp, { waitUntil: 'networkidle' });
+      await ep.evaluate(async () => { await document.fonts.ready; });
+      await ep.waitForTimeout(600);
+      const pages = [];
+      for (let i = 1; i <= 7; i++) {
+        const b = await ep.locator('#s' + i).screenshot({ type: 'jpeg', quality: 82 });
+        pages.push('data:image/jpeg;base64,' + Buffer.from(b).toString('base64'));
+      }
+      await ep.close();
+      const printHtml = '<!doctype html><html><head><meta charset="utf-8"><style>'
+        + '@page{size:1080px 1350px;margin:0}*{margin:0;padding:0}'
+        + '.pg{width:1080px;height:1350px;page-break-after:always;overflow:hidden}'
+        + '.pg:last-child{page-break-after:auto}.pg img{width:1080px;height:1350px;display:block}'
+        + '</style></head><body>'
+        + pages.map(d => '<div class="pg"><img src="' + d + '"></div>').join('')
+        + '</body></html>';
+      const pp = await browser.newPage();
+      await pp.setContent(printHtml, { waitUntil: 'networkidle' });
+      const pdf = await pp.pdf({ width: '1080px', height: '1350px', printBackground: true, pageRanges: '1-7' });
+      await pp.close();
+      recordData.pdf_url = await uploadPdfToCloudinary(Buffer.from(pdf), 'pink-li-' + date);
+      console.log('english PDF ->', recordData.pdf_url);
+    } catch (e) { console.error('english PDF skipped:', e.message); }
+  }
+
   await browser.close();
 
   const res = await fetch('https://' + MAKE_ZONE + '/api/v2/data-stores/' + DATASTORE_ID + '/data', {

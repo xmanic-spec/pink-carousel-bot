@@ -95,6 +95,9 @@
   .slide.cta .body{justify-content:flex-start}
   .slide.cta h1{font-size:150px}
   .slide.cta .idx{opacity:.1;font-size:620px;top:120px}
+  /* English (LTR) variant for LinkedIn */
+  [dir=ltr] .sub{border-right:0;border-left:9px solid var(--hit);padding-right:0;padding-left:22px}
+  [dir=ltr] .swipehint{justify-content:flex-start}
 </style>
 </head>
 <body>
@@ -107,9 +110,11 @@
     var theme=THEMES.indexOf(D.theme)>=0?D.theme:'t-ink';
     var B=D.brand||{},S=D.slides||[],N=S.length,bg=D.bg||'';
     var real=D.bgreal?' real':'';
+    var EN=(D.lang==='en');
+    if(EN){document.documentElement.setAttribute('dir','ltr');document.documentElement.setAttribute('lang','en');}
     var LOGO='https://res.cloudinary.com/duhfkgxer/image/upload/pink_carousel/pink_logo_main.png';
     var pad=function(n){return (n<10?'0':'')+n;};
-    var STAMP=['HOT TAKE','תובנה','המהלך','דחוף','עכשיו','PINK'];
+    var STAMP=EN?['HOT TAKE','INSIGHT','THE MOVE','NOW','URGENT','PINK']:['HOT TAKE','תובנה','המהלך','דחוף','עכשיו','PINK'];
     var root=document.getElementById('root');
     S.forEach(function(s,i){
       var n=i+1,isCta=s.type==='cta',big=(s.type==='hook'||isCta);
@@ -130,7 +135,7 @@
         + (s.sub?'<div class="sub">'+s.sub+'</div>':'')
         + (isCta&&s.pill?'<span class="pill">'+s.pill+'</span>':'')
         + '</div>'
-        + (!isCta&&n<N?'<div class="swipehint">החליקו<span class="a">&#8592;</span></div>':'')
+        + (!isCta&&n<N?(EN?'<div class="swipehint"><span class="a">&#8594;</span>SWIPE</div>':'<div class="swipehint">החליקו<span class="a">&#8592;</span></div>'):'')
         + '<div class="foot"><div class="brand"><span class="dot"></span>'
         + '<div><span class="handle">'+(B.handle||'@bankhaltershay')+'</span>'
         + '<small>'+(B.sub||'PINK MEDIA')+'</small></div></div>'

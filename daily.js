@@ -185,6 +185,24 @@ async function genStockPhoto(query) {
   const hm = (m) => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
   console.log('publish (Israel):', 'IG ' + hm(igMin), 'LI ' + hm(liMin), 'FB ' + hm(fbMin));
 
+  // English adaptation for LinkedIn (international audience). Never blocks the carousel.
+  try {
+    const er = await anthropic({
+      model: 'claude-sonnet-4-6', max_tokens: 3000,
+      system: 'You are a senior marketing, AI and PPC strategist at Pink Media. Adapt the given Hebrew carousel into a professional ENGLISH LinkedIn carousel for an international executive audience. Same story, same 7-slide structure, same sharp senior voice. Not a literal translation, a strong English rewrite. Ironclad: no em dash, no double hyphen, no rule-of-three padding, no generic openers. Return ONLY minified JSON: {"caption":"<english caption + 3-5 hashtags>","slides":[{"type":"hook|content|cta","kicker":"...","eyebrow":"...","h":"short headline","sub":"1-2 short lines","pill":"cta only"}]} with exactly 7 slides.',
+      messages: [{ role: 'user', content: 'Hebrew caption:\n' + content.caption + '\n\nHebrew slides JSON:\n' + JSON.stringify(content.slides) }],
+    });
+    const et = (er.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
+    const ea = et.indexOf('{'), eb = et.lastIndexOf('}');
+    const en = JSON.parse(et.slice(ea, eb + 1));
+    if (en && en.caption && Array.isArray(en.slides) && en.slides.length === 7) {
+      en.caption = clean(en.caption);
+      en.slides.forEach((sl) => { ['kicker', 'eyebrow', 'h', 'sub', 'pill'].forEach((k) => { if (sl[k] != null) sl[k] = clean(sl[k]); }); });
+      content.en = en;
+      console.log('english adaptation ok:', en.caption.slice(0, 70));
+    }
+  } catch (e) { console.log('english adaptation skipped:', e.message); }
+
   const dir = path.join(__dirname, 'content');
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, date + '.json'), JSON.stringify(content, null, 2));
