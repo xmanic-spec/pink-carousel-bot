@@ -32,8 +32,8 @@
   .idx{position:absolute;left:-30px;bottom:-140px;z-index:-1;font-family:"Space Mono",monospace;font-weight:700;
     font-size:460px;line-height:1;color:transparent;-webkit-text-stroke:2px var(--idx);user-select:none}
   .eyebrow{font-size:34px;font-weight:800;color:var(--acc);margin-bottom:24px;letter-spacing:.01em}
-  h1{font-size:118px;font-weight:900;line-height:1.04;letter-spacing:-.02em;color:var(--head)}
-  h2{font-size:92px;font-weight:800;line-height:1.08;letter-spacing:-.01em;color:var(--head)}
+  h1{font-size:118px;font-weight:900;line-height:1.04;letter-spacing:-.02em;color:var(--head);overflow-wrap:anywhere}
+  h2{font-size:92px;font-weight:800;line-height:1.08;letter-spacing:-.01em;color:var(--head);overflow-wrap:anywhere}
   mark{background:none;color:var(--acc);position:relative;white-space:nowrap}
   mark::after{content:"";position:absolute;right:0;left:0;bottom:.04em;height:.16em;background:var(--acc);opacity:.32;border-radius:4px}
   .sub{margin-top:34px;font-size:45px;font-weight:400;color:var(--mut);line-height:1.42;max-width:880px}
@@ -130,8 +130,21 @@
         +'</div>';
       root.appendChild(div);
     });
-    var h=location.hash.replace('#','');
-    if(h){document.body.classList.add('solo');var el=document.getElementById(h);if(el)el.classList.add('on');}
+    var hsh=location.hash.replace('#','');
+    if(hsh){document.body.classList.add('solo');var el=document.getElementById(hsh);if(el)el.classList.add('on');}
+    function fit(){
+      document.querySelectorAll('.slide').forEach(function(sl){
+        if(sl.offsetParent===null) return;
+        var head=sl.querySelector('h1,h2'), body=sl.querySelector('.body');
+        if(!head||!body) return;
+        var sz=parseFloat(getComputedStyle(head).fontSize), g=0;
+        while(g++<90 && sz>48 && (head.scrollWidth>head.clientWidth+1 || body.scrollHeight>body.clientHeight+1)){ sz-=3; head.style.fontSize=sz+'px'; }
+        var sub=sl.querySelector('.sub'), s2=0;
+        if(sub){ var ssz=parseFloat(getComputedStyle(sub).fontSize);
+          while(s2++<50 && ssz>24 && body.scrollHeight>body.clientHeight+1){ ssz-=2; sub.style.fontSize=ssz+'px'; } }
+      });
+    }
+    if(document.fonts&&document.fonts.ready){document.fonts.ready.then(fit);}else{fit();}
   })();
 </script>
 </body>

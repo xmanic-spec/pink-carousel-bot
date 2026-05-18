@@ -94,6 +94,13 @@ async function genBackground(topic, accent) {
   if (!content.slides || content.slides.length !== 7 || !content.caption) {
     throw new Error('Invalid content JSON (need caption + 7 slides). Got: ' + JSON.stringify(content).slice(0, 300));
   }
+  // Enforce the no-AI-tells typography rule in code (model sometimes slips em dashes).
+  const clean = (t) => typeof t === 'string'
+    ? t.replace(/\s*[—–]\s*/g, ', ').replace(/--+/g, ' ').replace(/[ \t]{2,}/g, ' ').trim()
+    : t;
+  content.caption = clean(content.caption);
+  content.slides.forEach((sl) => { ['kicker', 'eyebrow', 'h', 'sub', 'pill'].forEach((k) => { if (sl[k] != null) sl[k] = clean(sl[k]); }); });
+
   // rotate visual theme by day-of-year so the feed never looks the same two days running
   const THEMES = ['t-ink', 't-cream', 't-acid', 't-blue', 't-sun'];
   const doy = Math.floor((Date.parse(date + 'T00:00:00Z') - Date.parse(date.slice(0, 4) + '-01-01T00:00:00Z')) / 86400000);
