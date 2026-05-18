@@ -34,7 +34,7 @@ async function uploadToCloudinary(buffer, hint) {
   const content = JSON.parse(fs.readFileSync(path.join(root, 'content', date + '.json'), 'utf8'));
   if (!content.slides || content.slides.length !== 7) throw new Error('Expected 7 slides');
 
-  const dataJson = JSON.stringify({ brand: content.brand, slides: content.slides });
+  const dataJson = JSON.stringify({ theme: content.theme, bg: content.bg, brand: content.brand, slides: content.slides });
   const html = tpl.replace(
     /<script id="data" type="application\/json">[\s\S]*?<\/script>/,
     '<script id="data" type="application/json">' + dataJson.replace(/<\//g, '<\\/') + '</script>'

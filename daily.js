@@ -55,6 +55,12 @@ async function anthropic(body) {
   if (!content.slides || content.slides.length !== 7 || !content.caption) {
     throw new Error('Invalid content JSON (need caption + 7 slides). Got: ' + JSON.stringify(content).slice(0, 300));
   }
+  // rotate visual theme by day-of-year so the feed never looks the same two days running
+  const THEMES = ['t-ink', 't-cream', 't-acid', 't-blue', 't-sun'];
+  const doy = Math.floor((Date.parse(date + 'T00:00:00Z') - Date.parse(date.slice(0, 4) + '-01-01T00:00:00Z')) / 86400000);
+  content.theme = THEMES[((doy % THEMES.length) + THEMES.length) % THEMES.length];
+  console.log('theme:', content.theme);
+
   const dir = path.join(__dirname, 'content');
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, date + '.json'), JSON.stringify(content, null, 2));
