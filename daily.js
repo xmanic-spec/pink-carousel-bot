@@ -127,11 +127,11 @@ async function genBackground(topic, accent) {
     't-blue': 'teal and cyan technical glow on deep navy',
     't-sun': 'warm sunset orange, pink and purple haze',
   };
-  if (content.theme !== 't-cream') {
+  {
     const topic = String((content.slides[0] && content.slides[0].h) || content.caption)
       .replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 140);
     try {
-      const bg = await genBackground(topic, ACCENT[content.theme] || 'subtle brand accents');
+      const bg = await genBackground(topic, ACCENT[content.theme] || 'high-contrast neon accents on near-black');
       if (bg) content.bg = bg;
     } catch (err) { console.log('bg: skipped (' + err.message + ')'); }
   }
