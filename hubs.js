@@ -1,7 +1,8 @@
 // Pink Media — rebuild the 4 pillar HUB posts as substantial, AI-optimized cornerstone pages.
-// Usage: node hubs.js          (rebuild all 4)   |   node hubs.js 858   (one)
-// Preserves the existing <!-- PINK-CLUSTER --> marker AND any cluster <li> already appended
-// (so article.js keeps working and prior links survive). No generic CTA. Run on Hetzner.
+// Usage: node hubs.js          rebuild all 4 (sequential)
+//        node hubs.js 858      rebuild one (use this to avoid timeouts)
+// Preserves the <!-- PINK-CLUSTER --> marker AND any cluster <li> already appended.
+// No generic CTA. SENTINEL-delimited model output (large HTML never breaks parsing).
 const AK = process.env.ANTHROPIC_API_KEY;
 const OK = process.env.OPENAI_API_KEY;
 const WP_SITE = (process.env.WP_SITE || 'https://pinkmedia.co.il').replace(/\/$/, '');
@@ -11,7 +12,7 @@ if (!AK || !WP_USER || !WP_PASS) { console.error('HUBS_SKIP: missing env'); proc
 const auth = 'Basic ' + Buffer.from(WP_USER + ':' + WP_PASS).toString('base64');
 
 const HUBS = [
-  { id: 858, cat: 10, label: 'AI ו-GEO', brief: 'איך מותגים מופיעים ונבחרים בתשובות של ChatGPT, Perplexity ו-AI Overviews של גוגל; GEO/AEO מול SEO; מדידת נוכחות במנועי AI.' },
+  { id: 858, cat: 10, label: 'AI ו-GEO', brief: 'איך מותגים מופיעים ונבחרים בתשובות של ChatGPT, Perplexity ו-AI Overviews של גוגל; GEO ו-AEO מול SEO; מדידת נוכחות במנועי AI.' },
   { id: 859, cat: 11, label: 'Google Ads ו-PPC', brief: 'ניהול תקציב נכון ב-Performance Max ו-AI Max, אותות המרה, מתי לתת לאוטומציה של גוגל לנהל ומתי לא.' },
   { id: 860, cat: 12, label: 'SEO בעידן ה-AI', brief: 'קידום אורגני כשהסף עלה: סמכות נושאית, מניעת קניבליזציה, תוכן שגם בני אדם וגם מודלים סומכים עליו.' },
   { id: 861, cat: 13, label: 'אוטומציה ו-AI לשיווק', brief: 'תהליכי עבודה אמיתיים, חיבור מודלים ל-CRM ולרשתות, איפה אוטומציה מכפילה תפוקה ואיפה היא שוברת.' },
@@ -49,14 +50,21 @@ async function upload(buf, fn, alt) {
   try { await wp('POST', '/wp-json/wp/v2/media/' + j.id, { alt_text: alt, title: alt }); } catch (_) {}
   return { id: j.id, src: j.source_url };
 }
-const extract = (t) => { const a = t.indexOf('{'), b = t.lastIndexOf('}'); return a < 0 ? null : t.slice(a, b + 1); };
+function parseBlocks(t, keys) {
+  t = t.replace(/```[a-z]*\n?/gi, '');
+  const out = {};
+  for (const k of keys) {
+    const re = new RegExp('<<' + k + '>>[ \\t]*\\n?([\\s\\S]*?)(?=\\n<<(?:' + keys.join('|') + ')>>|$)');
+    const m = t.match(re); if (m) out[k] = m[1].trim();
+  }
+  return out;
+}
 const strip = (t) => typeof t === 'string' ? t.replace(/\s*[—–]\s*/g, ', ').replace(/--+/g, ' ').replace(/[ \t]{2,}/g, ' ').trim() : t;
 const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 async function rebuild(H) {
-  const cur = await wp('GET', '/wp-json/wp/v2/posts/' + H.id + '?context=edit&_fields=content,title');
+  const cur = await wp('GET', '/wp-json/wp/v2/posts/' + H.id + '?context=edit&_fields=content');
   const raw = (cur.content && cur.content.raw) || '';
-  // preserve any cluster <li> items that already follow the marker
   let preserved = '';
   const m = raw.match(/<!-- PINK-CLUSTER -->([\s\S]*?)<\/ul>/);
   if (m) preserved = m[1];
@@ -69,38 +77,52 @@ async function rebuild(H) {
   ].join('\n');
 
   const SYS = `You are a senior strategist at Pink Media writing a PILLAR (cornerstone) page for pinkmedia.co.il. Hebrew, RTL. Audience: Israeli CEOs and marketing managers.
-This is the authoritative overview page for the whole topic, 700-950 words, deep and genuinely useful, with a strong point of view. Not a list of links, not thin.
-AI-ENGINE OPTIMIZED: open with a 2-3 sentence direct definition/answer to "what is this and why it matters" (extractable by AI models). Question-style H2s. Short, self-contained, citable paragraphs. Specific, no invented statistics.
+This is the authoritative overview for the whole topic: 700-950 words, deep, genuinely useful, strong point of view. Not a list of links, not thin.
+AI-ENGINE OPTIMIZED: open with a 2-3 sentence direct definition/answer to "what is this and why it matters" (extractable by AI models). Question-style H2s. Short self-contained citable paragraphs. Specific, no invented statistics.
 IRONCLAD: zero AI-writing tells. No em dash, no double hyphen, no "במילים אחרות", no generic openers, no rule-of-three padding, NO generic "contact us" CTA paragraph.
-INTERNAL LINKS: weave 3-4 contextual links from the provided menu into the prose (sibling pillars and the relevant service page), descriptive anchors only.
-FAQ: 3-4 real FAQ pairs.
-Output ONLY minified JSON: {"title":"<=60 char H1","excerpt":"<=150 char meta","html":"<semantic HTML: <p><h2><h3><ul>; no <h1>; no inline styles; no CTA; contains a __IMG__ marker once near the top; contains menu links>","img_prompt":"<en>","img_alt":"<he>","faq":[{"q":"<he>","a":"<he>"}]}`;
-  const usr = `Pillar: ${H.label}\nScope: ${H.brief}\nInternal link menu:\n${links}\nWrite the pillar page now. Output ONLY JSON.`;
-  let a;
-  const r1 = await anthropic({ model: 'claude-sonnet-4-6', max_tokens: 4000, system: SYS, messages: [{ role: 'user', content: usr }] });
-  try { a = JSON.parse(extract(r1)); }
-  catch (_) { const r2 = await anthropic({ model: 'claude-sonnet-4-6', max_tokens: 4000, system: 'Return one valid minified JSON object, preserve Hebrew, no prose.', messages: [{ role: 'user', content: r1 }] }); a = JSON.parse(extract(r2)); }
-  ['title', 'excerpt', 'html'].forEach(k => a[k] = strip(a[k]));
-  if (!a.html || a.html.length < 500) throw new Error('hub ' + H.id + ' too thin');
+INTERNAL LINKS: weave 3-4 contextual links from the menu into the prose (sibling pillars + relevant service page), descriptive anchors.
+RESPONSE FORMAT: output EXACTLY these blocks, each header alone on its line, NO JSON, NO code fences:
+<<TITLE>>
+(<=60 char H1)
+<<EXCERPT>>
+(<=150 char meta)
+<<IMG>>
+english image prompt ::: hebrew alt text
+<<FAQ>>
+question 1 ||| answer 1
+question 2 ||| answer 2
+question 3 ||| answer 3
+<<HTML>>
+(semantic HTML: <p><h2><h3><ul>; one __IMG__ marker near the top; contains menu links; no <h1>; no inline styles; no CTA)`;
+  const usr = `Pillar: ${H.label}\nScope: ${H.brief}\nInternal link menu:\n${links}\nWrite the pillar page now.`;
+
+  const KEYS = ['TITLE', 'EXCERPT', 'IMG', 'FAQ', 'HTML'];
+  let bl = parseBlocks(await anthropic({ model: 'claude-sonnet-4-6', max_tokens: 4500, system: SYS, messages: [{ role: 'user', content: usr }] }), KEYS);
+  if (!bl.HTML || bl.HTML.length < 500 || !bl.TITLE) {
+    bl = parseBlocks(await anthropic({ model: 'claude-sonnet-4-6', max_tokens: 4500, system: SYS, messages: [{ role: 'user', content: usr + '\n\nReturn the sentinel blocks exactly as specified.' }] }), KEYS);
+  }
+  const title = strip(bl.TITLE), excerpt = strip(bl.EXCERPT);
+  let htmlBody = strip(bl.HTML);
+  if (!htmlBody || htmlBody.length < 500) throw new Error('hub ' + H.id + ' too thin / unparseable');
+  const [iprompt, ialt] = String(bl.IMG || '').split(':::').map(s => (s || '').trim());
+  const faq = String(bl.FAQ || '').split('\n').map(l => l.split('|||')).filter(x => x.length === 2).map(x => ({ q: strip(x[0].trim()), a: strip(x[1].trim()) }));
 
   let featured = 0;
   try {
-    const b = await genImage(a.img_prompt || H.label);
-    if (b) { const u = await upload(b, 'hub-' + H.id + '.png', a.img_alt || a.title); featured = u.id; a.html = a.html.replace('__IMG__', '<figure class="wp-block-image size-large"><img src="' + u.src + '" alt="' + esc(a.img_alt || a.title) + '" loading="lazy"/></figure>'); }
+    const b = await genImage(iprompt || H.label);
+    if (b) { const u = await upload(b, 'hub-' + H.id + '.png', ialt || title); featured = u.id; htmlBody = htmlBody.replace('__IMG__', '<figure class="wp-block-image size-large"><img src="' + u.src + '" alt="' + esc(ialt || title) + '" loading="lazy"/></figure>'); }
   } catch (e) { console.error('hub img skip ' + e.message); }
-  a.html = a.html.replace('__IMG__', '');
+  htmlBody = htmlBody.replace(/__IMG__/g, '');
 
-  // re-attach the cluster section (preserve prior items + keep marker for article.js)
-  a.html += '<h2>מדריכים מורחבים באשכול</h2><ul class="pink-cluster"><!-- PINK-CLUSTER -->' + preserved + '</ul>';
-
-  if (Array.isArray(a.faq) && a.faq.length) {
-    const ld = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: a.faq.filter(f => f && f.q && f.a).map(f => ({ '@type': 'Question', name: strip(f.q), acceptedAnswer: { '@type': 'Answer', text: strip(f.a) } })) };
-    a.html += '<h2>שאלות נפוצות</h2>' + ld.mainEntity.map(x => '<h3>' + esc(x.name) + '</h3><p>' + esc(x.acceptedAnswer.text) + '</p>').join('') + '<script type="application/ld+json">' + JSON.stringify(ld) + '</script>';
+  htmlBody += '<h2>מדריכים מורחבים באשכול</h2><ul class="pink-cluster"><!-- PINK-CLUSTER -->' + preserved + '</ul>';
+  if (faq.length) {
+    const ld = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faq.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) };
+    htmlBody += '<h2>שאלות נפוצות</h2>' + faq.map(f => '<h3>' + esc(f.q) + '</h3><p>' + esc(f.a) + '</p>').join('') + '<script type="application/ld+json">' + JSON.stringify(ld) + '</script>';
   }
-  const payload = { title: a.title, content: a.html, excerpt: a.excerpt, categories: [H.cat], meta: { _yoast_wpseo_metadesc: a.excerpt } };
+  const payload = { title, content: htmlBody, excerpt, categories: [H.cat], meta: { _yoast_wpseo_metadesc: excerpt } };
   if (featured) payload.featured_media = featured;
   await wp('POST', '/wp-json/wp/v2/posts/' + H.id, payload);
-  console.log('HUB_OK ' + H.id + ' "' + a.title + '" words~' + a.html.replace(/<[^>]+>/g, ' ').split(/\s+/).length + ' faq=' + ((a.faq || []).length) + ' featured=' + featured + ' preserved=' + (preserved ? 'yes' : 'no'));
+  console.log('HUB_OK ' + H.id + ' "' + title + '" words~' + htmlBody.replace(/<[^>]+>/g, ' ').split(/\s+/).length + ' faq=' + faq.length + ' featured=' + featured + ' preserved=' + (preserved ? 'yes' : 'no'));
 }
 
 (async () => {

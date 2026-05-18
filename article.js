@@ -1,9 +1,10 @@
-// Pink Media — daily long-form article publisher (runs on Hetzner; manual until Shay OKs autonomous).
-// Usage: node article.js <YYYY-MM-DD>            -> classify/anti-cannibalize/create or update
-//        FORCE_POST_ID=863 node article.js <date> -> regenerate that exact post in place (fix mode)
-// Article goals: medium depth (900-1200w, value not padding), AI-engine optimized (lead answer,
+// Pink Media — daily long-form article publisher (Hetzner; manual until Shay OKs autonomous).
+// Usage: node article.js <YYYY-MM-DD>             create/anti-cannibalize/update
+//        FORCE_POST_ID=863 node article.js <date>  regenerate that exact post in place (fix mode)
+// Goals: medium depth (900-1200w, value not padding), AI-engine optimized (lead answer,
 // question H2s, FAQ + FAQPage JSON-LD), >=2 in-body images, >=4 contextual internal links,
 // NO generic repeated CTA. Appends to the pillar HUB. Never fatally blocks the carousel.
+// Model output is SENTINEL-delimited (not JSON) so large HTML never breaks parsing.
 const fs = require('fs');
 const path = require('path');
 
@@ -22,12 +23,10 @@ const PILLARS = {
   'seo-ai-era': { cat: 12, hub: 860, label: 'SEO בעידן ה-AI' },
   'marketing-automation-ai': { cat: 13, hub: 861, label: 'אוטומציה ו-AI לשיווק' },
 };
-// Stable internal-link targets on pinkmedia.co.il (service/landing pages) for the topical web + soft funnel.
 const PAGES = {
   geo: 'https://pinkmedia.co.il/geo/',
   seoEcom: 'https://pinkmedia.co.il/seo-ecommerce/',
   workWithUs: 'https://pinkmedia.co.il/work_with_us/',
-  blog: 'https://pinkmedia.co.il/blog/',
 };
 
 if (!AK || !WP_USER || !WP_PASS) { console.error('ARTICLE_SKIP: missing ANTHROPIC_API_KEY / WP_USER / WP_APP_PASS'); process.exit(2); }
@@ -65,10 +64,9 @@ async function anthropic(body) {
   if (!res.ok) throw new Error('Anthropic ' + res.status + ': ' + JSON.stringify(j).slice(0, 240));
   return (j.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
 }
-// OpenAI image (gpt-image-2 -> 1.5 -> 1). Returns Buffer or null. Never throws.
 async function genImage(prompt, size) {
   if (!OK) return null;
-  const full = 'Premium editorial illustration for a marketing article. ' + prompt + '. Sophisticated, modern, brand-safe, soft depth and clean composition. ABSOLUTELY NO text, letters, words, numbers, logos, charts or UI.';
+  const full = 'Premium editorial illustration for a marketing article. ' + prompt + '. Sophisticated, modern, brand-safe, soft depth, clean composition. ABSOLUTELY NO text, letters, words, numbers, logos, charts or UI.';
   for (const model of ['gpt-image-2', 'gpt-image-1.5', 'gpt-image-1']) {
     try {
       const r = await fetch('https://api.openai.com/v1/images/generations', {
@@ -84,7 +82,17 @@ async function genImage(prompt, size) {
   }
   return null;
 }
-function extractJson(t) { const a = t.indexOf('{'), b = t.lastIndexOf('}'); return (a < 0 || b <= a) ? null : t.slice(a, b + 1); }
+// SENTINEL parser: blocks introduced by a line "<<KEY>>". HTML is last so it can contain anything.
+function parseBlocks(t, keys) {
+  t = t.replace(/```[a-z]*\n?/gi, '');
+  const out = {};
+  for (const k of keys) {
+    const re = new RegExp('<<' + k + '>>[ \\t]*\\n?([\\s\\S]*?)(?=\\n<<(?:' + keys.join('|') + ')>>|$)');
+    const m = t.match(re);
+    if (m) out[k] = m[1].trim();
+  }
+  return out;
+}
 function norm(s) { return String(s || '').replace(/[֑-ׇ]/g, '').replace(/<[^>]+>/g, ' ').toLowerCase().replace(/["'’”“׳״.,:;!?()\-]/g, ' ').replace(/\s+/g, ' ').trim(); }
 const STOP = new Set('של עם או גם כל לא מה איך מי הכי זה זו את על אל כי אם עד ה ו ב ל ש מ כ מן for the and a to in of is'.split(' '));
 function toks(s) { return new Set(norm(s).split(' ').filter(t => t.length >= 2 && !STOP.has(t))); }
@@ -99,7 +107,7 @@ const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').
   const topic = stripTells(String((slides[0] && slides[0].h) || content.caption || '').replace(/<[^>]+>/g, ' ')).slice(0, 160);
   const sourceFacts = slides.map((s, i) => (i + 1) + '. ' + [s.kicker, s.h, s.sub].filter(Boolean).join(' | ')).join('\n');
 
-  // classify pillar + reader query
+  // classify pillar + reader query (small, JSON ok here)
   let pillar = 'seo-ai-era', query = topic;
   try {
     const cls = await anthropic({
@@ -107,7 +115,8 @@ const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').
       system: 'Classify a Hebrew marketing topic into ONE pillar slug: ai-geo, google-ads-ppc, seo-ai-era, marketing-automation-ai. Return ONLY {"pillar":"<slug>","query":"<2-6 word Hebrew search query>"}',
       messages: [{ role: 'user', content: 'Topic: ' + topic + '\n' + sourceFacts }],
     });
-    const c = JSON.parse(extractJson(cls)); if (PILLARS[c.pillar]) pillar = c.pillar; if (c.query) query = c.query;
+    const a = cls.indexOf('{'), b = cls.lastIndexOf('}');
+    const c = JSON.parse(cls.slice(a, b + 1)); if (PILLARS[c.pillar]) pillar = c.pillar; if (c.query) query = c.query;
   } catch (_) {}
   const P = PILLARS[pillar];
   const hubPost = await wp('GET', '/wp-json/wp/v2/posts/' + P.hub + '?context=edit&_fields=id,link,content');
@@ -122,72 +131,87 @@ const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').
   const dup = FORCE_POST_ID ? null : cand.find(c => c.sim >= 0.55);
   const related = cand.filter(c => c !== dup && c.sim >= 0.12).slice(0, 3);
 
-  // internal-link menu given to the model (must weave >=4 contextually)
   const otherHubs = Object.values(PILLARS).filter(x => x.hub !== P.hub).map(x => x.label + ' :: ' + WP_SITE + '/?p=' + x.hub);
   const linkMenu = [
     'אשכול ' + P.label + ' (עוגן ראשי) :: ' + hubPost.link,
     ...otherHubs,
     'עמוד שירות GEO :: ' + PAGES.geo,
-    'עמוד SEO לאיקומרס :: ' + PAGES.seoEcom,
+    'SEO לאיקומרס :: ' + PAGES.seoEcom,
     'עבודה איתנו :: ' + PAGES.workWithUs,
     ...related.map(r => r.title + ' :: ' + r.link),
   ].join('\n');
 
   const SYS = `You are a senior marketing/AI/automation strategist at Pink Media writing for pinkmedia.co.il. Hebrew only, RTL. Audience: Israeli CEOs and marketing managers.
 Write ONE article of 900-1200 words that gives real, usable value. Not a news recap, not padding. Explain the mechanism correctly, the bottom-line implication, a concrete step-by-step the reader can do this week, and a short checklist.
-AI-ENGINE OPTIMIZED (this matters): open with a 1-2 sentence direct, quotable answer to the core question (so AI models can extract it). Use question-style H2 headings phrased the way people actually ask. Keep paragraphs short and self-contained so any paragraph is citable on its own. Be specific and factual; never invent statistics (only use the provided source facts; everything else is reasoning/strategy).
+AI-ENGINE OPTIMIZED: open with a 1-2 sentence direct, quotable answer to the core question. Question-style H2s phrased the way people ask. Short self-contained citable paragraphs. Specific and factual; never invent statistics (only the provided source facts; the rest is reasoning/strategy).
 IRONCLAD: zero AI-writing tells. No em dash, no double hyphen, no "במילים אחרות", no generic openers, no rule-of-three padding. Do NOT add any generic "contact us" CTA paragraph.
-INTERNAL LINKS: weave at least 4 contextually-relevant internal links INTO the body prose using only URLs from the provided link menu (the pillar hub once, 1-2 sibling hubs where genuinely relevant, the most relevant service page, and at most one soft work-with-us link, only where natural). Anchor text must be descriptive, never "כאן"/"לחצו".
-IMAGES: place exactly two markers in the body where an illustration belongs: __IMG1__ near the top after the intro, __IMG2__ mid-article. Provide an English generation prompt and Hebrew alt text for each.
-FAQ: end with 3-4 genuine FAQ pairs.
-Output ONLY minified JSON: {"title":"<=60 char specific H1","excerpt":"<=150 char concrete meta description","focuskw":"<2-4 word Hebrew>","html":"<semantic HTML body: <p><h2><h3><ul><ol>; contains __IMG1__ and __IMG2__ and >=4 menu links; NO <h1>; NO inline styles; NO CTA paragraph>","dek":"<=90 char hub-list summary","img1_prompt":"<en>","img1_alt":"<he>","img2_prompt":"<en>","img2_alt":"<he>","faq":[{"q":"<he>","a":"<he>"}]}`;
-  const usr = `Topic: ${topic}\nPillar: ${P.label}\nSource facts (do not invent beyond these):\n${sourceFacts}\n\nInternal link menu (use real URLs from here, >=4, contextual):\n${linkMenu}\n\nWrite it now. Output ONLY the JSON.`;
+INTERNAL LINKS: weave at least 4 contextual internal links INTO the prose using only URLs from the link menu (pillar hub once, 1-2 sibling hubs where relevant, the most relevant service page, at most one soft work-with-us link). Descriptive anchors, never "כאן".
+IMAGES: put markers __IMG1__ (after the intro) and __IMG2__ (mid-article) on their own lines in the HTML.
+RESPONSE FORMAT: output EXACTLY these blocks, each header alone on its line, NO JSON, NO code fences:
+<<TITLE>>
+(<=60 char specific H1)
+<<EXCERPT>>
+(<=150 char concrete meta description)
+<<FOCUSKW>>
+(2-4 word Hebrew)
+<<DEK>>
+(<=90 char hub-list summary)
+<<IMG1>>
+english image prompt ::: hebrew alt text
+<<IMG2>>
+english image prompt ::: hebrew alt text
+<<FAQ>>
+question 1 ||| answer 1
+question 2 ||| answer 2
+question 3 ||| answer 3
+<<HTML>>
+(semantic HTML body: <p><h2><h3><ul><ol>; contains __IMG1__ and __IMG2__ and >=4 menu links; NO <h1>; NO inline styles; NO CTA paragraph)`;
+  const usr = `Topic: ${topic}\nPillar: ${P.label}\nSource facts (do not invent beyond these):\n${sourceFacts}\n\nInternal link menu (use real URLs from here, >=4, contextual):\n${linkMenu}\n\nWrite it now.`;
 
-  let art;
-  {
-    const raw = await anthropic({ model: 'claude-sonnet-4-6', max_tokens: 4500, system: SYS, messages: [{ role: 'user', content: usr }] });
-    try { art = JSON.parse(extractJson(raw)); }
-    catch (_) {
-      const rep = await anthropic({ model: 'claude-sonnet-4-6', max_tokens: 4500, system: 'Return as one valid minified JSON object, preserve Hebrew, no prose.', messages: [{ role: 'user', content: raw }] });
-      art = JSON.parse(extractJson(rep));
-    }
+  const KEYS = ['TITLE', 'EXCERPT', 'FOCUSKW', 'DEK', 'IMG1', 'IMG2', 'FAQ', 'HTML'];
+  let bl = parseBlocks(await anthropic({ model: 'claude-sonnet-4-6', max_tokens: 5000, system: SYS, messages: [{ role: 'user', content: usr }] }), KEYS);
+  if (!bl.HTML || bl.HTML.length < 600 || !bl.TITLE) {
+    bl = parseBlocks(await anthropic({ model: 'claude-sonnet-4-6', max_tokens: 5000, system: SYS, messages: [{ role: 'user', content: usr + '\n\nReturn the sentinel blocks exactly as specified.' }] }), KEYS);
   }
-  ['title', 'excerpt', 'focuskw', 'html', 'dek'].forEach(k => { art[k] = stripTells(art[k]); });
-  if (!art.title || !art.html || art.html.length < 600) throw new Error('article too thin');
+  const art = {
+    title: stripTells(bl.TITLE), excerpt: stripTells(bl.EXCERPT), focuskw: stripTells(bl.FOCUSKW),
+    dek: stripTells(bl.DEK), html: stripTells(bl.HTML),
+  };
+  if (!art.title || !art.html || art.html.length < 600) throw new Error('article too thin / unparseable');
+  const parseImg = (s) => { const [p, a] = String(s || '').split(':::'); return { prompt: (p || '').trim(), alt: (a || '').trim() }; };
+  const I1 = parseImg(bl.IMG1), I2 = parseImg(bl.IMG2);
+  const faq = String(bl.FAQ || '').split('\n').map(l => l.split('|||')).filter(x => x.length === 2).map(x => ({ q: stripTells(x[0].trim()), a: stripTells(x[1].trim()) }));
 
-  // images: generate, sideload, embed as <figure>; IMG1 = featured
+  // images
   let featured = content.__featured || 0;
-  for (const n of [1, 2]) {
+  for (const [n, I] of [[1, I1], [2, I2]]) {
     const mk = '__IMG' + n + '__';
     try {
-      const buf = await genImage(art['img' + n + '_prompt'] || (P.label + ' concept'), '1536x1024');
+      const buf = await genImage(I.prompt || (P.label + ' concept'), '1536x1024');
       if (!buf) { art.html = art.html.replace(mk, ''); continue; }
-      const up = await wpUploadBuffer(buf, date + '-' + n + '.png', art['img' + n + '_alt'] || art.title);
+      const up = await wpUploadBuffer(buf, date + '-' + n + '.png', I.alt || art.title);
       if (n === 1) featured = up.id;
-      const fig = '<figure class="wp-block-image size-large"><img src="' + up.src + '" alt="' + esc(art['img' + n + '_alt'] || art.title) + '" loading="lazy"/></figure>';
-      art.html = art.html.replace(mk, fig);
+      art.html = art.html.replace(mk, '<figure class="wp-block-image size-large"><img src="' + up.src + '" alt="' + esc(I.alt || art.title) + '" loading="lazy"/></figure>');
     } catch (e) { console.error('img' + n + ' skipped ' + e.message); art.html = art.html.replace(mk, ''); }
   }
   art.html = art.html.replace(/__IMG\d__/g, '');
 
-  // guarantee >=4 internal links (fallback if the model under-delivered)
-  const intCount = (art.html.match(/href="https?:\/\/pinkmedia\.co\.il/g) || []).length;
-  if (intCount < 4) {
+  // guarantee >=4 internal links
+  if ((art.html.match(/href="https?:\/\/pinkmedia\.co\.il/g) || []).length < 4) {
+    const sib = Object.values(PILLARS).find(x => x.hub !== P.hub);
     art.html += '<h2>להעמיק בנושא</h2><ul>'
       + '<li><a href="' + hubPost.link + '">' + esc(P.label) + ': המדריך המלא</a></li>'
       + '<li><a href="' + PAGES.geo + '">GEO ואופטימיזציה למנועי AI</a></li>'
-      + '<li><a href="' + WP_SITE + '/?p=' + Object.values(PILLARS).find(x => x.hub !== P.hub).hub + '">אשכולות תוכן נוספים</a></li>'
+      + '<li><a href="' + WP_SITE + '/?p=' + sib.hub + '">' + esc(sib.label) + '</a></li>'
       + '<li><a href="' + PAGES.workWithUs + '">איך פינק מדיה עובדת עם עסקים</a></li></ul>';
   }
 
-  // FAQPage JSON-LD for AI/rich results
-  if (Array.isArray(art.faq) && art.faq.length) {
-    const ld = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: art.faq.filter(f => f && f.q && f.a).map(f => ({ '@type': 'Question', name: stripTells(f.q), acceptedAnswer: { '@type': 'Answer', text: stripTells(f.a) } })) };
-    const faqHtml = '<h2>שאלות נפוצות</h2>' + ld.mainEntity.map(m => '<h3>' + esc(m.name) + '</h3><p>' + esc(m.acceptedAnswer.text) + '</p>').join('');
-    art.html += faqHtml + '<script type="application/ld+json">' + JSON.stringify(ld) + '</script>';
+  // FAQ + JSON-LD
+  if (faq.length) {
+    const ld = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faq.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) };
+    art.html += '<h2>שאלות נפוצות</h2>' + faq.map(f => '<h3>' + esc(f.q) + '</h3><p>' + esc(f.a) + '</p>').join('') + '<script type="application/ld+json">' + JSON.stringify(ld) + '</script>';
   }
 
-  // create / update
   let post, mode;
   const payload = { title: art.title, content: art.html, excerpt: art.excerpt, status: 'publish', categories: [P.cat], meta: { _yoast_wpseo_metadesc: art.excerpt, _yoast_wpseo_focuskw: art.focuskw } };
   if (featured) payload.featured_media = featured;
@@ -199,7 +223,6 @@ Output ONLY minified JSON: {"title":"<=60 char specific H1","excerpt":"<=150 cha
   } else { post = await wp('POST', '/wp-json/wp/v2/posts', payload); mode = 'new'; }
   const url = post.link;
 
-  // append to pillar hub (one controlled edit; newest first; idempotent on URL)
   try {
     const h = await wp('GET', '/wp-json/wp/v2/posts/' + P.hub + '?context=edit&_fields=content');
     let raw = (h.content && h.content.raw) || '';
@@ -211,5 +234,5 @@ Output ONLY minified JSON: {"title":"<=60 char specific H1","excerpt":"<=150 cha
 
   content.article_url = url; content.article_title = art.title; content.article_pillar = pillar;
   fs.writeFileSync(cfile, JSON.stringify(content, null, 2));
-  console.log('ARTICLE_OK ' + JSON.stringify({ mode, pillar, post_id: post.id, url, internal_links: (art.html.match(/href="https?:\/\/pinkmedia/g) || []).length, imgs: (art.html.match(/<img/g) || []).length }));
+  console.log('ARTICLE_OK ' + JSON.stringify({ mode, pillar, post_id: post.id, url, internal_links: (art.html.match(/href="https?:\/\/pinkmedia/g) || []).length, imgs: (art.html.match(/<img/g) || []).length, faq: faq.length }));
 })().catch((e) => { console.error('ARTICLE_FAIL:', e.message); process.exit(1); });
