@@ -88,9 +88,22 @@ async function genBackground(topic, accent) {
     messages: [{ role: 'user', content: 'Today is ' + date + '. Research the last 3 days of AI, SEO and PPC marketing news, choose the single strongest story for the audience, and output ONLY the content JSON described in the system prompt.' }],
   });
   const text = (j.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
-  const s = text.indexOf('{'), e = text.lastIndexOf('}');
-  if (s < 0 || e <= s) throw new Error('No JSON in model output: ' + text.slice(0, 300));
-  const content = JSON.parse(text.slice(s, e + 1));
+  function extract(t) { const a = t.indexOf('{'), b = t.lastIndexOf('}'); return (a < 0 || b <= a) ? null : t.slice(a, b + 1); }
+  async function parseOrRepair(raw) {
+    const j0 = extract(raw);
+    if (j0) { try { return JSON.parse(j0); } catch (_) {} }
+    console.log('content JSON invalid, asking model to repair...');
+    const r = await anthropic({
+      model: 'claude-sonnet-4-6', max_tokens: 4000,
+      system: 'You repair malformed JSON. Output ONLY valid minified JSON, no prose, no code fences. Preserve all Hebrew text exactly.',
+      messages: [{ role: 'user', content: 'Return this as one valid JSON object:\n' + raw }],
+    });
+    const rt = (r.content || []).filter(b => b.type === 'text').map(b => b.text).join('').trim();
+    const j1 = extract(rt);
+    if (!j1) throw new Error('No JSON after repair');
+    return JSON.parse(j1);
+  }
+  const content = await parseOrRepair(text);
   if (!content.slides || content.slides.length !== 7 || !content.caption) {
     throw new Error('Invalid content JSON (need caption + 7 slides). Got: ' + JSON.stringify(content).slice(0, 300));
   }
