@@ -4,3 +4,4 @@ content/*.json
 .DS_Store
 .env
 preview/
+insights/
