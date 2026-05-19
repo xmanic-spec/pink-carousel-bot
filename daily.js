@@ -25,8 +25,10 @@ IRONCLAD WRITING RULES (obey all):
 STRUCTURE across the 7 slides: slide1 = cutting hook (break a myth / hot take / a critical problem the news creates). slides2-5 = strategic interpretation: what really happened under the surface and how it hits campaigns, traffic or conversions. slide6 = one concrete step to take tomorrow morning. slide7 = short natural CTA.
 FORMAT: pick ONE presentation for the day and vary it day to day: myth-vs-reality, or manager checklist, or deep tactical analysis.
 
+ART DIRECTION: also output "art" = ONE vivid, specific English sentence describing a DARING conceptual editorial PHOTOGRAPH that stops the scroll dead. It must be a real photograph (fashion / advertising campaign craft), but the staged scene should be bold, surprising, even absurd or surreal, while staying TIGHTLY connected to the meaning of THIS exact story. Favor an intense human moment: a person mid-scream with their mouth wide open, a shocking gesture, an impossible-but-on-point situation. Punchy high-contrast color is welcome. NEVER 3D / CGI / illustration / render (it must look like a real photo). NEVER a bland stock office, NEVER abstract shapes or empty space. Do not describe any text, readable screens or UI, letters, numbers or logos (a separate system renders all text). One concrete, evocative sentence.
+
 OUTPUT: return ONLY valid minified JSON, no markdown, no commentary, exactly this shape:
-{"caption":"<hebrew caption + 5-7 hashtags starting with #פינקמדיה>","brand":{"kicker":"Pink Media","handle":"@bankhaltershay","sub":"פינק מדיה · שיווק דיגיטלי"},"slides":[{"type":"hook","kicker":"...","eyebrow":"...","h":"... <mark>one phrase</mark> ...","sub":"1-2 short lines"},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"..."},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"..."},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"..."},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"..."},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"one action for tomorrow"},{"type":"cta","kicker":"Pink Media","eyebrow":"...","h":"...","sub":"...","pill":"short button text"}]}
+{"caption":"<hebrew caption + 5-7 hashtags starting with #פינקמדיה>","art":"<one vivid English sentence: the single unforgettable conceptual hero image for this story, strong visual metaphor, no text/UI>","brand":{"kicker":"Pink Media","handle":"@bankhaltershay","sub":"פינק מדיה · שיווק דיגיטלי"},"slides":[{"type":"hook","kicker":"...","eyebrow":"...","h":"... <mark>one phrase</mark> ...","sub":"1-2 short lines"},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"..."},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"..."},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"..."},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"..."},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"one action for tomorrow"},{"type":"cta","kicker":"Pink Media","eyebrow":"...","h":"...","sub":"...","pill":"short button text"}]}
 Keep every "h" short (renders very large). Keep "sub" about 2 short lines. Exactly 7 slides.`;
 
 async function anthropic(body) {
@@ -50,18 +52,24 @@ async function cloudinaryUpload(buffer) {
   return j.secure_url;
 }
 
-// Generate an abstract topical background via OpenAI gpt-image-2. Never throws: returns
-// a Cloudinary URL or null so a bad image day degrades to a plain themed slide.
-async function genBackground(topic, accent) {
+// Generate a BOLD, topical hero image via OpenAI gpt-image-2. The day's "art" concept
+// (art-directed by the content model for this exact story) is the heart of the prompt.
+// Never throws: returns a Cloudinary URL or null so a bad image day still renders.
+async function genBackground(art, topic, accent) {
   const okey = process.env.OPENAI_API_KEY;
   if (!okey) { console.log('bg: no OPENAI_API_KEY, skipping'); return null; }
-  const prompt = 'Abstract premium editorial background image for a marketing carousel about: ' + topic + '. Dark moody atmosphere, ' + accent + ', cinematic depth, soft volumetric light, subtle geometric shapes and texture, lots of empty negative space. ABSOLUTELY NO text, NO letters, NO words, NO numbers, NO logos, NO charts, NO UI. Vertical poster background only.';
+  const concept = (art && String(art).trim())
+    ? String(art).trim()
+    : ('A single bold conceptual hero image that captures the core tension of: ' + topic);
+  const prompt = concept
+    + '. A daring conceptual editorial photograph with the craft of a high-end fashion or advertising campaign, shot on a full-frame camera with a fast prime lens, real photographic detail, real skin texture and natural grain. A bold, surprising, even absurd or surreal STAGED scene that stays tightly connected to the subject, one striking human subject with an intense expression or gesture (a wide-open-mouth scream, shock, defiance). Punchy high-contrast color: hard gelled studio lighting in ' + accent
+    + ' set against a strong complementary color, saturated and graphic, with deep rich shadows for depth. Scroll-stopping and unforgettable. It MUST look like a real photograph, NOT an illustration, NOT a 3D render, NOT CGI. No text, no readable screens or interfaces, no letters, no numbers, no logos, no watermark, no border. Fill the whole frame. Horizontal composition.';
   for (const model of ['gpt-image-2', 'gpt-image-1.5', 'gpt-image-1']) {
     try {
       const res = await fetch('https://api.openai.com/v1/images/generations', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + okey, 'content-type': 'application/json' },
-        body: JSON.stringify({ model, prompt, size: '1024x1536', n: 1 }),
+        body: JSON.stringify({ model, prompt, size: '1536x1024', n: 1 }),
       });
       const j = await res.json();
       if (!res.ok) { console.log('bg: ' + model + ' -> ' + res.status + ' ' + JSON.stringify(j).slice(0, 160)); continue; }
@@ -148,14 +156,24 @@ async function genStockPhoto(query) {
   // rotate visual theme by day-of-year so the feed never looks the same two days running
   const THEMES = ['t-ink', 't-cream', 't-acid', 't-blue', 't-sun', 't-grape', 't-fire', 't-cobalt', 't-gold'];
   content.theme = THEMES[((doy % THEMES.length) + THEMES.length) % THEMES.length];
-  console.log('theme:', content.theme);
+  // rotate the poster layout too (loud, but varied) so it never looks templated:
+  // bleed = full image + heavy scrim, split = big image over a solid dark text zone,
+  // card = maximalist zine hero card. Cycle of 3 vs theme cycle of 9 = many combos.
+  const LAYOUTS = ['bleed', 'split', 'card'];
+  content.layout = LAYOUTS[((doy % LAYOUTS.length) + LAYOUTS.length) % LAYOUTS.length];
+  console.log('theme:', content.theme, '| layout:', content.layout);
 
-  // AI background per topic (dark themes only; t-cream stays a clean light editorial look)
+  // AI hero image color world per theme (all 9 dark neon palettes)
   const ACCENT = {
-    't-ink': 'electric magenta and cyan accents on near-black',
-    't-acid': 'vivid magenta, violet and warm orange energy',
-    't-blue': 'teal and cyan technical glow on deep navy',
-    't-sun': 'warm sunset orange, pink and purple haze',
+    't-ink': 'hot magenta-pink',
+    't-cream': 'acid lime-green',
+    't-acid': 'electric cyan',
+    't-blue': 'vivid teal',
+    't-sun': 'blazing orange',
+    't-grape': 'ultra violet',
+    't-fire': 'searing red',
+    't-cobalt': 'electric blue',
+    't-gold': 'molten gold',
   };
   const PHOTO_Q = ['marketing team meeting in modern office', 'digital marketing analytics on a screen', 'business strategy whiteboard session', 'advertising creative team collaborating', 'startup founders working late at night', 'social media manager using smartphone closeup', 'data dashboard charts on a monitor', 'marketer presenting to executives in boardroom', 'designer working on laptop closeup', 'modern tech office team candid'];
   {
@@ -168,7 +186,7 @@ async function genStockPhoto(query) {
         bg = await genStockPhoto(PHOTO_Q[((doy % PHOTO_Q.length) + PHOTO_Q.length) % PHOTO_Q.length]);
         if (bg) content.bgreal = true;
       }
-      if (!bg) bg = await genBackground(topic, ACCENT[content.theme] || 'high-contrast neon accents on near-black');
+      if (!bg) bg = await genBackground(content.art, topic, ACCENT[content.theme] || 'high-contrast neon accents on near-black');
       if (bg) content.bg = bg;
     } catch (err) { console.log('bg: skipped (' + err.message + ')'); }
   }

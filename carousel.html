@@ -11,9 +11,9 @@
   body{font-family:"Heebo",sans-serif}
   body:not(.solo){background:#333}
   body.solo .slide{display:none}
-  body.solo .slide.on{display:flex}
+  body.solo .slide.on{display:block}
 
-  /* dark-only collage palettes (neon hit rotates daily, wide variety) */
+  /* dark-only neon palettes (the hit color rotates daily for a varied feed) */
   .t-ink{--base:#0B0A0E;--ink:#FFFFFF;--hit:#FF2E88}
   .t-cream{--base:#0C0D07;--ink:#F5FFE8;--hit:#C6FF1E}
   .t-acid{--base:#080A14;--ink:#EAFBFF;--hit:#27E5FF}
@@ -24,90 +24,137 @@
   .t-cobalt{--base:#060A18;--ink:#E8EEFF;--hit:#4D7CFF}
   .t-gold{--base:#0F0C04;--ink:#FFF6E0;--hit:#FFD23D}
 
-  .slide{position:relative;width:1080px;height:1350px;overflow:hidden;display:flex;flex-direction:column;
+  .slide{position:relative;width:1080px;height:1350px;overflow:hidden;
     background:var(--base);color:var(--ink);font-family:"Heebo",sans-serif}
-  .slide::before{content:"";position:absolute;inset:30px;border:2px dashed var(--ink);opacity:.28;z-index:5;pointer-events:none}
-  .grain{position:absolute;inset:0;z-index:1;opacity:.08;mix-blend-mode:overlay;pointer-events:none;
+  .slide::before{content:"";position:absolute;inset:30px;border:2px dashed var(--ink);
+    opacity:.26;z-index:8;pointer-events:none}
+
+  /* texture identity (kept across every layout so the brand stays recognisable) */
+  .grain{position:absolute;inset:0;z-index:6;opacity:.07;mix-blend-mode:overlay;pointer-events:none;
     background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2'/></filter><rect width='220' height='220' filter='url(%23n)'/></svg>")}
-  .halftone{position:absolute;width:560px;height:560px;right:-160px;bottom:-170px;z-index:1;opacity:.42;
-    background-image:radial-gradient(var(--hit) 31%,transparent 32%);background-size:30px 30px;
-    -webkit-mask-image:linear-gradient(225deg,#000,transparent 72%)}
-  .idx{position:absolute;left:40px;top:200px;z-index:1;font-family:"Space Mono",monospace;font-weight:700;
-    font-size:540px;line-height:1;color:transparent;-webkit-text-stroke:3px var(--hit);opacity:.07;user-select:none}
+  .halftone{position:absolute;width:540px;height:540px;right:-150px;bottom:-160px;z-index:6;opacity:.34;
+    pointer-events:none;background-image:radial-gradient(var(--hit) 31%,transparent 32%);
+    background-size:30px 30px;-webkit-mask-image:linear-gradient(225deg,#000,transparent 72%)}
+  .idx{position:absolute;left:38px;top:150px;z-index:2;font-family:"Space Mono",monospace;font-weight:700;
+    font-size:520px;line-height:1;color:transparent;-webkit-text-stroke:3px var(--hit);
+    opacity:.06;user-select:none;pointer-events:none}
 
-  /* header */
-  .top{position:relative;z-index:6;display:flex;justify-content:space-between;align-items:flex-start;padding:70px 70px 0}
+  /* image layers (full colour, brand-graded, never crushed to a flat rectangle) */
+  .bg{position:absolute;z-index:1;overflow:hidden;background:#000}
+  .bg .img{position:absolute;inset:-2px;background-size:cover;background-position:center;
+    filter:contrast(1.07) saturate(1.12) brightness(1.03)}
+  .bg .tint{position:absolute;inset:0;background:var(--hit);mix-blend-mode:overlay;opacity:.16}
+  .bg .grade{position:absolute;inset:0;background:
+    radial-gradient(120% 85% at 50% 30%,transparent 38%,rgba(0,0,0,.5) 100%)}
+  .bg.real .tint{opacity:.07}
+  .bg.empty{display:flex;align-items:center;justify-content:center;background:var(--hit)}
+  .bg.empty b{font-family:"Space Mono",monospace;font-size:340px;color:var(--base);opacity:.22}
+
+  /* header + footer: own solid backgrounds so they read on any image */
+  .top{position:absolute;top:0;left:0;right:0;z-index:9;display:flex;
+    justify-content:space-between;align-items:flex-start;padding:60px 64px 0}
   .kick{display:inline-block;background:var(--ink);color:var(--base);font-family:"Space Mono",monospace;
-    font-weight:700;font-size:23px;letter-spacing:.16em;text-transform:uppercase;padding:11px 20px;transform:rotate(-2deg)}
-  .pg{font-family:"Space Mono",monospace;font-weight:700;font-size:26px;background:var(--hit);color:var(--base);
-    padding:9px 15px;transform:rotate(3deg);direction:ltr;unicode-bidi:isolate}
-
-  /* hero photo collage band */
-  .stage{position:relative;z-index:4;flex:0 0 560px;margin:34px 0 6px}
-  .block{position:absolute;width:600px;height:470px;top:46px;right:118px;background:var(--hit);transform:rotate(3.5deg);z-index:1}
-  .photo{position:absolute;top:14px;right:172px;width:600px;height:470px;z-index:2;border:9px solid var(--ink);
-    box-shadow:16px 18px 0 rgba(0,0,0,.5);transform:rotate(-2.5deg);background:#000;overflow:hidden}
-  .photo .img{position:absolute;inset:0;background-size:cover;background-position:center;
-    filter:grayscale(1) contrast(1.12) brightness(1.05)}
-  .photo .duo{position:absolute;inset:0;background:var(--hit);mix-blend-mode:multiply;opacity:.5}
-  .photo .duo2{position:absolute;inset:0;background:var(--base);mix-blend-mode:soft-light;opacity:.4}
-  .photo.empty{display:flex;align-items:center;justify-content:center;background:var(--hit)}
-  .photo.empty b{font-family:"Space Mono",monospace;font-size:300px;color:var(--base);opacity:.25}
-  /* real stock photo: natural, authentic, not stylized */
-  .photo.real .duo{opacity:.12}
-  .photo.real .duo2{opacity:.16;mix-blend-mode:normal;background:linear-gradient(180deg,transparent 55%,rgba(0,0,0,.45))}
-  .photo.real .img{filter:grayscale(0) contrast(1.05) saturate(1.06) brightness(1)}
-  .tape{position:absolute;z-index:3;width:190px;height:52px;background:rgba(255,255,255,.28);transform:rotate(-22deg);
-    top:8px;right:230px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
-  .stamp{position:absolute;z-index:4;left:96px;top:330px;width:208px;height:208px;border:5px solid var(--hit);
-    border-radius:50%;display:flex;align-items:center;justify-content:center;transform:rotate(-12deg);
-    color:var(--hit);font-family:"Space Mono",monospace;font-weight:700;font-size:30px;letter-spacing:.05em;text-align:center}
-  .stamp::after{content:"";position:absolute;inset:13px;border:2px dashed var(--hit);border-radius:50%;opacity:.65}
-
-  /* text band */
-  .body{position:relative;z-index:6;flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 74px}
-  .eyebrow{display:inline-block;align-self:flex-start;font-weight:900;font-size:30px;color:var(--base);
-    background:var(--hit);padding:8px 18px;transform:rotate(-1.5deg);margin-bottom:24px}
-  h1,h2{font-weight:900;color:var(--ink);line-height:1.0;letter-spacing:-.02em}
-  h1{font-size:120px}
-  h2{font-size:90px}
-  mark{background:var(--hit);color:var(--base);padding:.02em .08em;box-decoration-break:clone;
-    -webkit-box-decoration-break:clone;display:inline-block;transform:skewX(-6deg)}
-  .sub{margin-top:28px;font-size:42px;font-weight:700;color:var(--ink);line-height:1.34;max-width:920px;
-    border-right:9px solid var(--hit);padding-right:22px;opacity:.95}
-  .pill{display:inline-block;align-self:flex-start;margin-top:38px;background:var(--hit);color:var(--base);
-    font-size:46px;font-weight:900;padding:26px 52px;transform:rotate(-2deg);box-shadow:12px 12px 0 rgba(0,0,0,.45)}
-
-  /* footer sticker bar */
-  .foot{position:relative;z-index:6;display:flex;justify-content:space-between;align-items:center;
-    background:var(--ink);color:var(--base);padding:24px 70px;margin-top:34px}
+    font-weight:700;font-size:23px;letter-spacing:.14em;text-transform:uppercase;
+    padding:11px 20px;transform:rotate(-2deg)}
+  .pg{font-family:"Space Mono",monospace;font-weight:700;font-size:26px;background:var(--hit);
+    color:var(--base);padding:9px 15px;transform:rotate(3deg);direction:ltr;unicode-bidi:isolate}
+  .foot{position:absolute;bottom:0;left:0;right:0;z-index:9;display:flex;
+    justify-content:space-between;align-items:center;background:var(--ink);color:var(--base);
+    padding:22px 64px;height:104px}
   .brand{display:flex;align-items:center;gap:14px;font-size:30px;font-weight:900}
   .brand .handle{direction:ltr;unicode-bidi:isolate}
   .brand small{display:block;font-size:17px;font-weight:700;opacity:.65;font-family:"Space Mono",monospace}
   .dot{width:22px;height:22px;background:var(--hit);transform:rotate(45deg)}
-  .logo{height:60px;width:auto;display:block}
-  .swipehint{position:relative;z-index:6;display:flex;justify-content:flex-end;align-items:center;gap:10px;
-    padding:6px 78px 16px;font-family:"Space Mono",monospace;font-weight:700;font-size:25px;color:var(--ink);opacity:.72}
+  .logo{height:58px;width:auto;display:block}
+  .swipehint{position:absolute;left:0;right:0;bottom:104px;z-index:9;display:flex;
+    justify-content:flex-end;align-items:center;gap:10px;padding:8px 70px;
+    font-family:"Space Mono",monospace;font-weight:700;font-size:25px;color:var(--ink);
+    text-shadow:0 2px 10px rgba(0,0,0,.7)}
   .swipehint .a{color:var(--hit);font-size:32px}
 
-  /* CTA: dark + loud (no photo, but full collage energy) */
-  .slide.cta .stage{flex:0 0 250px}
-  .slide.cta .body{justify-content:flex-start}
+  /* collage props (used by card + split for zine character) */
+  .tape{position:absolute;z-index:5;width:220px;height:54px;background:rgba(255,255,255,.26);
+    transform:rotate(-21deg);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+  .stamp{position:absolute;z-index:7;width:206px;height:206px;border:5px solid var(--hit);
+    border-radius:50%;display:flex;align-items:center;justify-content:center;transform:rotate(-12deg);
+    color:var(--hit);font-family:"Space Mono",monospace;font-weight:700;font-size:30px;
+    letter-spacing:.05em;text-align:center;background:rgba(0,0,0,.28)}
+  .stamp::after{content:"";position:absolute;inset:13px;border:2px dashed var(--hit);
+    border-radius:50%;opacity:.65}
+
+  /* text block (shared); fit() shrinks h + sub so nothing ever clips */
+  .body{position:absolute;left:0;right:0;z-index:9;display:flex;flex-direction:column;
+    justify-content:center;padding:0 70px}
+  .eyebrow{display:inline-block;align-self:flex-start;font-weight:900;font-size:30px;
+    color:var(--base);background:var(--hit);padding:8px 18px;transform:rotate(-1.5deg);margin-bottom:22px}
+  h1,h2{font-weight:900;color:var(--ink);line-height:1.0;letter-spacing:-.02em;
+    text-shadow:0 3px 22px rgba(0,0,0,.55)}
+  h1{font-size:118px}
+  h2{font-size:86px}
+  mark{background:var(--hit);color:var(--base);padding:.02em .08em;box-decoration-break:clone;
+    -webkit-box-decoration-break:clone;display:inline-block;transform:skewX(-6deg)}
+  .sub{margin-top:26px;font-size:41px;font-weight:700;color:var(--ink);line-height:1.32;
+    max-width:940px;border-right:9px solid var(--hit);padding-right:22px}
+  .pill{display:inline-block;align-self:flex-start;margin-top:36px;background:var(--hit);
+    color:var(--base);font-size:46px;font-weight:900;padding:26px 52px;transform:rotate(-2deg);
+    box-shadow:12px 12px 0 rgba(0,0,0,.45)}
+
+  /* ===== LAYOUT A — bleed: full image + heavy bottom scrim, loud headline ===== */
+  .lay-bleed .bg{inset:0}
+  .lay-bleed .scrim{position:absolute;inset:0;z-index:3;pointer-events:none;background:
+    linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,0) 30%,rgba(0,0,0,.46) 50%,
+    rgba(0,0,0,.82) 70%,var(--base) 89%)}
+  .lay-bleed .body{bottom:178px;height:560px;top:auto}
+  .lay-bleed .sub{background:rgba(0,0,0,.34);padding:14px 22px 14px 0;backdrop-filter:blur(2px)}
+  .lay-bleed .stamp{right:70px;top:330px}
+  .lay-bleed .tape{display:none}
+
+  /* ===== LAYOUT B — split: big image band over a solid dark text zone ===== */
+  .lay-split .bg{left:0;right:0;top:0;height:624px}
+  .lay-split .bg .grade{background:linear-gradient(180deg,rgba(0,0,0,.14) 0%,
+    rgba(0,0,0,0) 34%,rgba(0,0,0,.22) 74%,var(--base) 100%)}
+  .lay-split .seam{position:absolute;left:0;right:0;top:612px;height:14px;z-index:4;
+    background:var(--hit)}
+  .lay-split .body{top:660px;bottom:150px;justify-content:flex-start;padding-top:30px}
+  .lay-split .stamp{right:62px;top:486px}
+  .lay-split .tape{top:-10px;right:300px}
+  .lay-split .idx{top:632px;font-size:380px;opacity:.05}
+
+  /* ===== LAYOUT C — card: maximalist zine hero card on the dark base ===== */
+  .lay-card .stage{position:absolute;left:0;right:0;top:120px;height:650px;z-index:4}
+  .lay-card .block{position:absolute;width:820px;height:560px;top:44px;right:96px;
+    background:var(--hit);transform:rotate(2.6deg)}
+  .lay-card .photo{position:absolute;top:0;right:150px;width:820px;height:560px;overflow:hidden;
+    border:10px solid var(--ink);box-shadow:18px 20px 0 rgba(0,0,0,.5);transform:rotate(-1.9deg)}
+  .lay-card .tape{top:-12px;right:300px}
+  .lay-card .stamp{left:70px;top:418px}
+  .lay-card .body{top:792px;bottom:170px}
+  .lay-card .idx{top:170px}
+
+  /* CTA: no image, maximum type energy, every layout collapses to this */
+  .slide.cta .bg,.slide.cta .scrim,.slide.cta .seam,.slide.cta .stage,
+  .slide.cta .tape{display:none}
+  .slide.cta .body{top:300px;bottom:150px;height:auto;justify-content:flex-start}
   .slide.cta h1{font-size:150px}
-  .slide.cta .idx{opacity:.1;font-size:620px;top:120px}
-  /* English (LTR) variant for LinkedIn */
+  .slide.cta .idx{top:120px;font-size:600px;opacity:.1}
+  .slide.cta .stamp{right:74px;top:300px}
+
+  /* English (LTR) for the LinkedIn variant */
   [dir=ltr] .sub{border-right:0;border-left:9px solid var(--hit);padding-right:0;padding-left:22px}
+  [dir=ltr] .lay-bleed .sub{padding:14px 0 14px 22px}
   [dir=ltr] .swipehint{justify-content:flex-start}
 </style>
 </head>
 <body>
-<script id="data" type="application/json">{"theme":"t-ink","brand":{"handle":"@bankhaltershay","sub":"PINK MEDIA"},"slides":[]}</script>
+<script id="data" type="application/json">{"theme":"t-ink","layout":"card","brand":{"handle":"@bankhaltershay","sub":"PINK MEDIA"},"slides":[]}</script>
 <div id="root"></div>
 <script>
   (function(){
     var D=JSON.parse(document.getElementById('data').textContent);
     var THEMES=['t-ink','t-cream','t-acid','t-blue','t-sun','t-grape','t-fire','t-cobalt','t-gold'];
+    var LAYOUTS=['bleed','split','card'];
     var theme=THEMES.indexOf(D.theme)>=0?D.theme:'t-ink';
+    var layout=LAYOUTS.indexOf(D.layout)>=0?D.layout:'card';
     var B=D.brand||{},S=D.slides||[],N=S.length,bg=D.bg||'';
     var real=D.bgreal?' real':'';
     var EN=(D.lang==='en');
@@ -118,17 +165,28 @@
     var root=document.getElementById('root');
     S.forEach(function(s,i){
       var n=i+1,isCta=s.type==='cta',big=(s.type==='hook'||isCta);
+      var showImg=!!bg&&!isCta;
       var div=document.createElement('div');
-      div.className='slide '+theme+(isCta?' cta':'');
+      div.className='slide '+theme+' lay-'+layout+(isCta?' cta':'');
       div.id='s'+n;
-      var photo = bg
-        ? '<div class="block"></div><div class="photo'+real+'"><div class="img" style="background-image:url(\''+bg+'\')"></div><div class="duo"></div><div class="duo2"></div></div><div class="tape"></div>'
-        : '<div class="block"></div><div class="photo empty"><b>'+pad(n)+'</b></div><div class="tape"></div>';
+      var imgInner = showImg
+        ? '<div class="img" style="background-image:url(\''+bg+'\')"></div><div class="tint"></div><div class="grade"></div>'
+        : (isCta?'':'<b>'+pad(n)+'</b>');
+      var bgEl = isCta ? ''
+        : '<div class="bg'+real+(showImg?'':' empty')+'">'+imgInner+'</div>'
+          + (layout==='bleed'?'<div class="scrim"></div>':'')
+          + (layout==='split'?'<div class="seam"></div>':'');
+      var stage = (layout==='card'&&!isCta)
+        ? '<div class="stage"><div class="block"></div></div>'
+        : '';
+      var props = isCta ? ''
+        : '<div class="tape"></div><div class="stamp">'+STAMP[i%STAMP.length]+'</div>';
       div.innerHTML =
-        '<div class="grain"></div><div class="halftone"></div><div class="idx">'+pad(n)+'</div>'
+        bgEl + stage
+        + '<div class="grain"></div><div class="halftone"></div><div class="idx">'+pad(n)+'</div>'
+        + props
         + '<div class="top"><div class="kick">'+(s.kicker||B.sub||'PINK MEDIA')+'</div>'
         + '<div class="pg"><b>'+pad(n)+'</b> / '+pad(N)+'</div></div>'
-        + '<div class="stage">'+(isCta?'':photo)+(isCta?'':'<div class="stamp">'+STAMP[i%STAMP.length]+'</div>')+'</div>'
         + '<div class="body">'
         + (s.eyebrow?'<span class="eyebrow">'+s.eyebrow+'</span>':'')
         + '<'+(big?'h1':'h2')+'>'+(s.h||'')+'</'+(big?'h1':'h2')+'>'
@@ -141,6 +199,22 @@
         + '<small>'+(B.sub||'PINK MEDIA')+'</small></div></div>'
         + '<img class="logo" src="'+LOGO+'" alt="Pink">'
         + '</div>';
+      // card mode: the photo card lives inside the stage, behind the props
+      if(layout==='card'&&showImg){
+        var st=div.querySelector('.stage');
+        var ph=document.createElement('div');
+        ph.className='photo';
+        ph.innerHTML='<div class="bg'+real+'" style="position:absolute;inset:0">'
+          +'<div class="img" style="background-image:url(\''+bg+'\')"></div>'
+          +'<div class="tint"></div><div class="grade"></div></div>';
+        st.appendChild(ph);
+      } else if(layout==='card'&&!isCta){
+        var st2=div.querySelector('.stage');
+        var pe=document.createElement('div');
+        pe.className='photo';
+        pe.innerHTML='<div class="bg empty" style="position:absolute;inset:0"><b>'+pad(n)+'</b></div>';
+        st2.appendChild(pe);
+      }
       root.appendChild(div);
     });
     var hsh=location.hash.replace('#','');
@@ -151,10 +225,10 @@
         var head=sl.querySelector('h1,h2'), body=sl.querySelector('.body');
         if(!head||!body) return;
         var sz=parseFloat(getComputedStyle(head).fontSize), g=0;
-        while(g++<140 && sz>44 && (head.scrollWidth>head.clientWidth+1 || body.scrollHeight>body.clientHeight+1)){ sz-=3; head.style.fontSize=sz+'px'; }
+        while(g++<160 && sz>40 && (head.scrollWidth>head.clientWidth+1 || body.scrollHeight>body.clientHeight+1)){ sz-=3; head.style.fontSize=sz+'px'; }
         var sub=sl.querySelector('.sub'), s2=0;
         if(sub){ var ss=parseFloat(getComputedStyle(sub).fontSize);
-          while(s2++<60 && ss>22 && body.scrollHeight>body.clientHeight+1){ ss-=2; sub.style.fontSize=ss+'px'; } }
+          while(s2++<80 && ss>20 && body.scrollHeight>body.clientHeight+1){ ss-=2; sub.style.fontSize=ss+'px'; } }
       });
     }
     if(document.fonts&&document.fonts.ready){document.fonts.ready.then(fit);}else{fit();}

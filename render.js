@@ -44,7 +44,7 @@ async function uploadPdfToCloudinary(buffer, hint) {
   const content = JSON.parse(fs.readFileSync(path.join(root, 'content', date + '.json'), 'utf8'));
   if (!content.slides || content.slides.length !== 7) throw new Error('Expected 7 slides');
 
-  const dataJson = JSON.stringify({ theme: content.theme, bg: content.bg, bgreal: content.bgreal, brand: content.brand, slides: content.slides });
+  const dataJson = JSON.stringify({ theme: content.theme, layout: content.layout, bg: content.bg, bgreal: content.bgreal, brand: content.brand, slides: content.slides });
   const html = tpl.replace(
     /<script id="data" type="application\/json">[\s\S]*?<\/script>/,
     '<script id="data" type="application/json">' + dataJson.replace(/<\//g, '<\\/') + '</script>'
@@ -81,7 +81,7 @@ async function uploadPdfToCloudinary(buffer, hint) {
   // LinkedIn swipe carousel) -> Cloudinary. Never blocks the Hebrew carousel/queue.
   if (content.en && Array.isArray(content.en.slides) && content.en.slides.length === 7) {
     try {
-      const enData = JSON.stringify({ theme: content.theme, bg: content.bg, bgreal: content.bgreal, brand: content.brand, slides: content.en.slides, lang: 'en' });
+      const enData = JSON.stringify({ theme: content.theme, layout: content.layout, bg: content.bg, bgreal: content.bgreal, brand: content.brand, slides: content.en.slides, lang: 'en' });
       const enHtml = tpl.replace(
         /<script id="data" type="application\/json">[\s\S]*?<\/script>/,
         '<script id="data" type="application/json">' + enData.replace(/<\//g, '<\\/') + '</script>'
