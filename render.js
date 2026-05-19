@@ -73,6 +73,14 @@ async function uploadPdfToCloudinary(buffer, hint) {
     caption_en: (content.en && content.en.caption) || content.caption,
     pdf_url: '',
     reel_url: '',
+    // Growth additions: tagged @mentions ride in the caption; first_comment posts
+    // immediately after the carousel goes live; ig_media_id captured by the carousel
+    // publisher when it succeeds so the comment scenario knows where to comment.
+    first_comment: content.first_comment || '',
+    first_comment_done: false,
+    ig_media_id: '',
+    story_url: '',
+    posted_story: false,
   };
   for (let i = 1; i <= 7; i++) {
     const buf = await page.locator('#s' + i).screenshot({ type: 'jpeg', quality: 84 });
@@ -92,6 +100,20 @@ async function uploadPdfToCloudinary(buffer, hint) {
     console.error('reel skipped:', e.message);
     recordData.reel_url = '';
     recordData.posted_reel = true;
+  }
+
+  // Story image (single 1080x1920 PNG) used by the Hetzner-side story publisher to
+  // re-promote the new carousel to Instagram Stories the moment the feed post goes
+  // live. Same hero bg, no extra image generation. Failure is non-blocking.
+  try {
+    const { renderStory } = require('./story');
+    const storyUrl = await renderStory(content, date, 'he');
+    recordData.story_url = storyUrl;
+    console.log('story ->', storyUrl);
+  } catch (e) {
+    console.error('story skipped:', e.message);
+    recordData.story_url = '';
+    recordData.posted_story = true;
   }
 
   // English LinkedIn carousel: render English slides -> single 7-page PDF (the native

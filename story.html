@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:1080px;height:1920px;overflow:hidden;background:#000}
+  body{font-family:"Heebo",sans-serif}
+  .t-ink{--base:#0B0A0E;--ink:#FFFFFF;--hit:#FF2E88}
+  .t-cream{--base:#0C0D07;--ink:#F5FFE8;--hit:#C6FF1E}
+  .t-acid{--base:#080A14;--ink:#EAFBFF;--hit:#27E5FF}
+  .t-blue{--base:#04141A;--ink:#E9FFF8;--hit:#00E5A0}
+  .t-sun{--base:#120A06;--ink:#FFF0E0;--hit:#FF8A1E}
+  .t-grape{--base:#0E0716;--ink:#F3E9FF;--hit:#B57BFF}
+  .t-fire{--base:#140706;--ink:#FFEDE9;--hit:#FF4D3D}
+  .t-cobalt{--base:#060A18;--ink:#E8EEFF;--hit:#4D7CFF}
+  .t-gold{--base:#0F0C04;--ink:#FFF6E0;--hit:#FFD23D}
+
+  .r{position:relative;width:1080px;height:1920px;overflow:hidden;background:var(--base);color:var(--ink)}
+  .img{position:absolute;inset:0;background-size:cover;background-position:center;
+    filter:contrast(1.08) saturate(1.12) brightness(1.02);z-index:1}
+  .tint{position:absolute;inset:0;z-index:2;background:var(--hit);mix-blend-mode:overlay;opacity:.18}
+  .scrim{position:absolute;inset:0;z-index:3;pointer-events:none;background:
+    linear-gradient(180deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,.1) 20%,rgba(0,0,0,.1) 50%,rgba(0,0,0,.78) 80%,var(--base) 100%)}
+  .frame{position:absolute;inset:36px;border:3px dashed var(--ink);opacity:.22;z-index:7;pointer-events:none}
+
+  .badge{position:absolute;top:240px;left:0;right:0;z-index:8;display:flex;justify-content:center}
+  .badge b{background:var(--hit);color:var(--base);font-family:"Space Mono",monospace;font-weight:700;
+    font-size:40px;letter-spacing:.18em;text-transform:uppercase;padding:18px 30px;transform:rotate(-2deg)}
+
+  .center{position:absolute;top:760px;left:0;right:0;z-index:8;text-align:center;padding:0 70px}
+  .center h1{font-weight:900;font-size:180px;line-height:.96;letter-spacing:-.02em;
+    text-shadow:0 4px 26px rgba(0,0,0,.7)}
+  .center .sub{margin-top:34px;font-weight:800;font-size:74px;color:var(--ink);
+    text-shadow:0 3px 18px rgba(0,0,0,.7)}
+  .arrow{position:absolute;top:1240px;left:0;right:0;z-index:8;text-align:center;
+    font-family:"Space Mono",monospace;font-size:220px;color:var(--hit);line-height:.8;
+    text-shadow:0 4px 22px rgba(0,0,0,.55)}
+  .handle{position:absolute;bottom:300px;left:0;right:0;z-index:8;text-align:center}
+  .handle b{display:inline-block;background:var(--ink);color:var(--base);font-weight:900;
+    font-size:54px;padding:18px 36px;direction:ltr;unicode-bidi:isolate;letter-spacing:-.01em}
+  .brand{position:absolute;bottom:200px;left:0;right:0;z-index:8;text-align:center;
+    font-weight:900;font-size:32px;color:var(--ink);text-shadow:0 2px 12px rgba(0,0,0,.7);
+    letter-spacing:.03em}
+</style>
+</head>
+<body class="t-blue">
+<script id="data" type="application/json">{"theme":"t-blue","bg":"","badge":"פוסט חדש","main":"פוסט חדש בפיד","sub":"החליקו לקרוסלה המלאה","handle":"@bankhaltershay"}</script>
+<div class="r">
+  <div class="img"></div><div class="tint"></div><div class="scrim"></div>
+  <div class="badge"><b id="badge">פוסט חדש</b></div>
+  <div class="center"><h1 id="main">פוסט חדש בפיד</h1><div class="sub" id="sub">החליקו לקרוסלה המלאה</div></div>
+  <div class="arrow">←</div>
+  <div class="handle"><b id="handle">@bankhaltershay</b></div>
+  <div class="brand">PINK MEDIA · שיווק דיגיטלי</div>
+  <div class="frame"></div>
+</div>
+<script>
+  (function(){
+    var D=JSON.parse(document.getElementById('data').textContent);
+    var THEMES=['t-ink','t-cream','t-acid','t-blue','t-sun','t-grape','t-fire','t-cobalt','t-gold'];
+    document.body.className=THEMES.indexOf(D.theme)>=0?D.theme:'t-blue';
+    if(D.lang==='en'){document.documentElement.setAttribute('dir','ltr');document.documentElement.setAttribute('lang','en');
+      document.querySelector('.arrow').textContent='→';}
+    if(D.bg) document.querySelector('.img').style.backgroundImage="url('"+D.bg+"')";
+    document.getElementById('badge').textContent=D.badge||'פוסט חדש';
+    document.getElementById('main').textContent=D.main||'פוסט חדש בפיד';
+    document.getElementById('sub').textContent=D.sub||'החליקו לקרוסלה המלאה';
+    document.getElementById('handle').textContent=D.handle||'@bankhaltershay';
+  })();
+</script>
+</body>
+</html>
