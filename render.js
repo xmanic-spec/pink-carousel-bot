@@ -60,21 +60,38 @@ async function uploadPdfToCloudinary(buffer, hint) {
 
   const recordData = {
     caption: content.caption,
-    posted: false,            // Instagram
+    posted: false,            // Instagram carousel
     posted_li: false,         // LinkedIn
     posted_fb: false,         // Facebook page
+    posted_reel: false,       // Instagram Reel companion
     posted_at: '1970-01-01 00:00',
     pub_ig: content.pub_ig || 1110,
     pub_li: content.pub_li || 1140,
     pub_fb: content.pub_fb || 1170,
+    pub_reel: content.pub_reel || 1290,   // default ~21:30 Israel
     date: date,
     caption_en: (content.en && content.en.caption) || content.caption,
     pdf_url: '',
+    reel_url: '',
   };
   for (let i = 1; i <= 7; i++) {
     const buf = await page.locator('#s' + i).screenshot({ type: 'jpeg', quality: 84 });
     recordData['img' + i] = await uploadToCloudinary(buf, date + '-' + i);
     console.log('slide', i, '->', recordData['img' + i]);
+  }
+
+  // Reel companion: a 10s vertical 1080x1920 video built from the SAME hero image and
+  // hook text. No extra OpenAI generation. Failure is non-blocking — we mark posted_reel
+  // true so the Reels publisher will simply skip this record.
+  try {
+    const { renderReel } = require('./reel');
+    const reelUrl = await renderReel(content, date, 'he');
+    recordData.reel_url = reelUrl;
+    console.log('reel ->', reelUrl);
+  } catch (e) {
+    console.error('reel skipped:', e.message);
+    recordData.reel_url = '';
+    recordData.posted_reel = true;
   }
 
   // English LinkedIn carousel: render English slides -> single 7-page PDF (the native

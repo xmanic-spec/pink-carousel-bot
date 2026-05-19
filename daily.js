@@ -199,9 +199,13 @@ async function genStockPhoto(query) {
   const igMin = 18 * 60 + Math.floor(rnd() * 90);                 // 18:00 - 19:30
   const liMin = Math.min(igMin + 18 + Math.floor(rnd() * 42), 21 * 60); // +18..59m
   const fbMin = Math.min(liMin + 16 + Math.floor(rnd() * 40), 21 * 60); // after LI
-  content.pub_ig = igMin; content.pub_li = liMin; content.pub_fb = fbMin;
+  // Reel posts ~2-3h after the IG carousel so the same account is not posting back
+  // to back (IG suppresses near-simultaneous posts from the same handle). Lands in
+  // the second evening peak window (21:00 - 22:30 Israel).
+  const reelMin = Math.min(21 * 60 + Math.floor(rnd() * 90), 22 * 60 + 30);
+  content.pub_ig = igMin; content.pub_li = liMin; content.pub_fb = fbMin; content.pub_reel = reelMin;
   const hm = (m) => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
-  console.log('publish (Israel):', 'IG ' + hm(igMin), 'LI ' + hm(liMin), 'FB ' + hm(fbMin));
+  console.log('publish (Israel):', 'IG ' + hm(igMin), 'LI ' + hm(liMin), 'FB ' + hm(fbMin), 'REEL ' + hm(reelMin));
 
   // English adaptation for LinkedIn (international audience). Never blocks the carousel.
   try {
