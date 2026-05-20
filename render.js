@@ -58,12 +58,18 @@ async function uploadPdfToCloudinary(buffer, hint) {
   await page.evaluate(async () => { await document.fonts.ready; });
   await page.waitForTimeout(600);
 
+  // Reel publishing is off by default (Shay 2026-05-20: a Reel + Carousel from the
+  // same handle on the same day made the feed look noisy and competed with the
+  // Carousel; for B2B Hebrew growth the Carousel wins on saves + follow-conversion).
+  // Set ENABLE_REEL=1 in Hetzner .env to re-enable when we want it back as a
+  // separate cadence with standalone Reel content.
+  const reelEnabled = process.env.ENABLE_REEL === '1';
   const recordData = {
     caption: content.caption,
     posted: false,            // Instagram carousel
     posted_li: false,         // LinkedIn
     posted_fb: false,         // Facebook page
-    posted_reel: false,       // Instagram Reel companion
+    posted_reel: !reelEnabled,// pre-marked done when disabled so the queue never fires the Reel publisher
     posted_at: '1970-01-01 00:00',
     pub_ig: content.pub_ig || 1110,
     pub_li: content.pub_li || 1140,
@@ -88,18 +94,22 @@ async function uploadPdfToCloudinary(buffer, hint) {
     console.log('slide', i, '->', recordData['img' + i]);
   }
 
-  // Reel companion: a 10s vertical 1080x1920 video built from the SAME hero image and
-  // hook text. No extra OpenAI generation. Failure is non-blocking — we mark posted_reel
-  // true so the Reels publisher will simply skip this record.
-  try {
-    const { renderReel } = require('./reel');
-    const reelUrl = await renderReel(content, date, 'he');
-    recordData.reel_url = reelUrl;
-    console.log('reel ->', reelUrl);
-  } catch (e) {
-    console.error('reel skipped:', e.message);
-    recordData.reel_url = '';
-    recordData.posted_reel = true;
+  // Reel companion: rendered + uploaded only when ENABLE_REEL=1. Saves a substantial
+  // chunk of pipeline time (Playwright video + ffmpeg + Cloudinary video upload).
+  if (reelEnabled) {
+    try {
+      const { renderReel } = require('./reel');
+      const reelUrl = await renderReel(content, date, 'he');
+      recordData.reel_url = reelUrl;
+      recordData.posted_reel = false;
+      console.log('reel ->', reelUrl);
+    } catch (e) {
+      console.error('reel skipped:', e.message);
+      recordData.reel_url = '';
+      recordData.posted_reel = true;
+    }
+  } else {
+    console.log('reel disabled (ENABLE_REEL not set)');
   }
 
   // Story image (single 1080x1920 PNG) used by the Hetzner-side story publisher to
