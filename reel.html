@@ -49,14 +49,16 @@
   @keyframes fadeIn{0%{opacity:0;transform:translateY(28px)}100%{opacity:1;transform:translateY(0)}}
   @keyframes fadeOut{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-18px)}}
 
-  .scene1{top:480px;height:900px;animation:fadeIn .45s .55s ease-out both,fadeOut .35s 3.3s ease-in both}
+  /* fadeOut uses 'forwards' (not 'both') so its backwards-fill cannot leak opacity:1
+     into the prior delay window and reveal a later scene before its own fadeIn runs. */
+  .scene1{top:480px;height:900px;animation:fadeIn .45s .55s ease-out both,fadeOut .35s 3.3s ease-in forwards}
   .scene1 h1{font-weight:900;font-size:150px;line-height:.98;letter-spacing:-.025em;
     text-shadow:0 4px 30px rgba(0,0,0,.7)}
   .scene1 .sticker{margin-top:38px;display:inline-block;background:var(--hit);color:var(--base);
     font-family:"Space Mono",monospace;font-weight:700;font-size:38px;letter-spacing:.1em;
     padding:14px 26px;transform:rotate(-2deg);text-transform:uppercase}
 
-  .scene2{top:520px;height:880px;animation:fadeIn .4s 3.75s ease-out both,fadeOut .35s 6.85s ease-in both}
+  .scene2{top:520px;height:880px;animation:fadeIn .4s 3.75s ease-out both,fadeOut .35s 6.85s ease-in forwards}
   .scene2 .eb{display:inline-block;background:var(--hit);color:var(--base);font-weight:900;
     font-size:46px;padding:14px 26px;transform:rotate(-1.5deg);margin-bottom:34px}
   .scene2 h2{font-weight:900;font-size:110px;line-height:1.02;letter-spacing:-.02em;
@@ -103,10 +105,13 @@
     var img=document.querySelector('.bg .img');
     if(D.bg) img.style.backgroundImage="url('"+D.bg+"')"; else img.style.background='var(--base)';
     document.getElementById('kicker').textContent=D.kicker||'PINK MEDIA';
+    // hookH and punchH come straight from the model's slide headlines, which may
+    // contain a <mark> highlight wrapper (same contract as carousel.html). Use
+    // innerHTML so the highlight renders instead of showing tags as literal text.
     document.getElementById('hookH').innerHTML=D.hookH||'';
     document.getElementById('hookSticker').textContent=D.hookSticker||'HOT TAKE';
     document.getElementById('punchEb').textContent=D.punchEb||'';
-    document.getElementById('punchH').textContent=D.punchH||'';
+    document.getElementById('punchH').innerHTML=D.punchH||'';
     document.getElementById('swipe').textContent=D.swipe||(D.lang==='en'?'SWIPE FOR MORE':'החליקו לקרוסלה');
     document.getElementById('handle').textContent=D.handle||'@bankhaltershay';
     // fit headlines so long Hebrew never clips
