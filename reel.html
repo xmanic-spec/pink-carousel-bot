@@ -69,7 +69,8 @@
     text-shadow:0 4px 22px rgba(0,0,0,.7);margin-bottom:30px}
   .scene3 .arrow{font-family:"Space Mono",monospace;font-size:200px;color:var(--hit);line-height:.8;
     margin:8px 0 28px;animation:wiggle 1.4s 7.7s infinite ease-in-out}
-  @keyframes wiggle{0%,100%{transform:translateX(0)}50%{transform:translateX(-22px)}}
+  /* up-arrow points at the IG Reel profile bar at the top; bob vertically */
+  @keyframes wiggle{0%,100%{transform:translateY(0)}50%{transform:translateY(-22px)}}
   .scene3 .handle{display:inline-block;background:var(--ink);color:var(--base);font-weight:900;
     font-size:60px;padding:18px 36px;direction:ltr;unicode-bidi:isolate;letter-spacing:-.01em}
 
@@ -90,7 +91,7 @@
   <div class="kicker"><b id="kicker">PINK MEDIA</b></div>
   <div class="scene scene1"><h1 id="hookH"></h1><span class="sticker" id="hookSticker">HOT TAKE</span></div>
   <div class="scene scene2"><span class="eb" id="punchEb"></span><h2 id="punchH"></h2></div>
-  <div class="scene scene3"><div class="swipe" id="swipe">החליקו לקרוסלה</div><div class="arrow">←</div><div class="handle" id="handle">@bankhaltershay</div></div>
+  <div class="scene scene3"><div class="swipe" id="swipe">ההסבר המלא בפיד</div><div class="arrow">&#8593;</div><div class="handle" id="handle">@bankhaltershay</div></div>
   <div class="footbar"><span class="dot"></span><span class="b">PINK MEDIA · שיווק דיגיטלי</span></div>
   <div class="frame"></div>
 </div>
@@ -100,8 +101,7 @@
     var THEMES=['t-ink','t-cream','t-acid','t-blue','t-sun','t-grape','t-fire','t-cobalt','t-gold'];
     var theme=THEMES.indexOf(D.theme)>=0?D.theme:'t-blue';
     document.body.className=theme;
-    if(D.lang==='en'){document.documentElement.setAttribute('dir','ltr');document.documentElement.setAttribute('lang','en');
-      document.querySelector('.scene3 .arrow').textContent='→';}
+    if(D.lang==='en'){document.documentElement.setAttribute('dir','ltr');document.documentElement.setAttribute('lang','en');}
     var img=document.querySelector('.bg .img');
     if(D.bg) img.style.backgroundImage="url('"+D.bg+"')"; else img.style.background='var(--base)';
     document.getElementById('kicker').textContent=D.kicker||'PINK MEDIA';

@@ -38,7 +38,10 @@ function payloadFor(content, lang) {
     hookSticker: stamp,
     punchEb: punch.eyebrow || '',
     punchH: punch.h || '',
-    swipe: lang === 'en' ? 'SWIPE FOR MORE' : 'החליקו לקרוסלה',
+    // Reels cannot be swiped to a carousel; CTA points to the profile feed where
+    // the full carousel post lives. Up-arrow in the template hints at the profile
+    // bar at the top of the IG Reel viewer.
+    swipe: lang === 'en' ? 'FULL POST IN MY FEED' : 'ההסבר המלא בפיד',
     handle: (content.brand && content.brand.handle) || '@bankhaltershay',
   };
 }
