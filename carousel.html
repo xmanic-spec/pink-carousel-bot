@@ -35,9 +35,10 @@
   .halftone{position:absolute;width:540px;height:540px;right:-150px;bottom:-160px;z-index:6;opacity:.34;
     pointer-events:none;background-image:radial-gradient(var(--hit) 31%,transparent 32%);
     background-size:30px 30px;-webkit-mask-image:linear-gradient(225deg,#000,transparent 72%)}
-  .idx{position:absolute;left:38px;top:150px;z-index:2;font-family:"Space Mono",monospace;font-weight:700;
-    font-size:520px;line-height:1;color:transparent;-webkit-text-stroke:3px var(--hit);
-    opacity:.06;user-select:none;pointer-events:none}
+  /* giant outline page-number behind the hero — visible enough to be a design element */
+  .idx{position:absolute;left:30px;top:130px;z-index:2;font-family:"Space Mono",monospace;font-weight:800;
+    font-size:640px;line-height:1;color:transparent;-webkit-text-stroke:5px var(--hit);
+    opacity:.12;user-select:none;pointer-events:none}
 
   /* image layers (full colour, brand-graded, never crushed to a flat rectangle) */
   .bg{position:absolute;z-index:1;overflow:hidden;background:#000}
@@ -56,8 +57,11 @@
   .kick{display:inline-block;background:var(--ink);color:var(--base);font-family:"Space Mono",monospace;
     font-weight:700;font-size:23px;letter-spacing:.14em;text-transform:uppercase;
     padding:11px 20px;transform:rotate(-2deg)}
-  .pg{font-family:"Space Mono",monospace;font-weight:700;font-size:26px;background:var(--hit);
-    color:var(--base);padding:9px 15px;transform:rotate(3deg);direction:ltr;unicode-bidi:isolate}
+  /* slide page indicator — significantly larger so it actually reads at a glance */
+  .pg{font-family:"Space Mono",monospace;font-weight:800;font-size:72px;line-height:1;background:var(--hit);
+    color:var(--base);padding:16px 26px;transform:rotate(3deg);direction:ltr;unicode-bidi:isolate;
+    box-shadow:6px 6px 0 rgba(0,0,0,.35);letter-spacing:-.02em}
+  .pg b{font-size:108px;font-weight:900}
   .foot{position:absolute;bottom:0;left:0;right:0;z-index:9;display:flex;
     justify-content:space-between;align-items:center;background:var(--ink);color:var(--base);
     padding:22px 64px;height:104px}

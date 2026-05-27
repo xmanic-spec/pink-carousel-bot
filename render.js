@@ -87,11 +87,26 @@ async function uploadPdfToCloudinary(buffer, hint) {
     ig_media_id: '',
     story_url: '',
     posted_story: false,
+    // Mid-carousel video slide: 1080x1350 MP4 that replaces slide 3 as the IG VIDEO
+    // child in the carousel. Empty falls back to img3 via the publisher's mapper.
+    vid3: '',
   };
   for (let i = 1; i <= 7; i++) {
     const buf = await page.locator('#s' + i).screenshot({ type: 'jpeg', quality: 84 });
     recordData['img' + i] = await uploadToCloudinary(buf, date + '-' + i);
     console.log('slide', i, '->', recordData['img' + i]);
+  }
+
+  // Slide 3 = mid-carousel video (1080x1350 mp4). img3 stays as the fallback in the
+  // queue so the publisher's mapper can degrade gracefully if vidSlide ever fails.
+  try {
+    const { renderVidSlide } = require('./vidSlide');
+    const vid3 = await renderVidSlide(content, date, 'he');
+    recordData.vid3 = vid3;
+    console.log('vid3 (slide 3 video) ->', vid3);
+  } catch (e) {
+    console.error('vid3 skipped (slide 3 stays as image):', e.message);
+    recordData.vid3 = '';
   }
 
   // Reel companion: rendered + uploaded only when ENABLE_REEL=1. Saves a substantial

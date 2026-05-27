@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:1080px;height:1350px;overflow:hidden;background:#000}
+  body{font-family:"Heebo",sans-serif}
+  /* same 9 dark palettes as carousel.html */
+  .t-ink{--base:#0B0A0E;--ink:#FFFFFF;--hit:#FF2E88}
+  .t-cream{--base:#0C0D07;--ink:#F5FFE8;--hit:#C6FF1E}
+  .t-acid{--base:#080A14;--ink:#EAFBFF;--hit:#27E5FF}
+  .t-blue{--base:#04141A;--ink:#E9FFF8;--hit:#00E5A0}
+  .t-sun{--base:#120A06;--ink:#FFF0E0;--hit:#FF8A1E}
+  .t-grape{--base:#0E0716;--ink:#F3E9FF;--hit:#B57BFF}
+  .t-fire{--base:#140706;--ink:#FFEDE9;--hit:#FF4D3D}
+  .t-cobalt{--base:#060A18;--ink:#E8EEFF;--hit:#4D7CFF}
+  .t-gold{--base:#0F0C04;--ink:#FFF6E0;--hit:#FFD23D}
+
+  .r{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--base);color:var(--ink)}
+  .bg{position:absolute;inset:0;z-index:1;overflow:hidden}
+  .bg .img{position:absolute;inset:-40px;background-size:cover;background-position:center;
+    filter:contrast(1.08) saturate(1.12) brightness(1.02);
+    animation:kb 7s ease-out both}
+  @keyframes kb{0%{transform:scale(1.04)}100%{transform:scale(1.18)}}
+  .bg .tint{position:absolute;inset:0;background:var(--hit);mix-blend-mode:overlay;opacity:.16}
+  .bg .grade{position:absolute;inset:0;background:radial-gradient(120% 80% at 50% 30%,transparent 38%,rgba(0,0,0,.55) 100%)}
+  .scrim{position:absolute;inset:0;z-index:2;background:
+    linear-gradient(180deg,rgba(0,0,0,.4) 0%,rgba(0,0,0,.1) 22%,rgba(0,0,0,.1) 55%,rgba(0,0,0,.75) 88%,var(--base) 100%);
+    pointer-events:none}
+  .grain{position:absolute;inset:0;z-index:6;opacity:.07;mix-blend-mode:overlay;pointer-events:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2'/></filter><rect width='220' height='220' filter='url(%23n)'/></svg>")}
+  .frame{position:absolute;inset:30px;border:2px dashed var(--ink);opacity:.22;z-index:9;pointer-events:none}
+
+  .top{position:absolute;top:0;left:0;right:0;z-index:9;display:flex;justify-content:space-between;
+    align-items:flex-start;padding:60px 64px 0}
+  .kick{display:inline-block;background:var(--ink);color:var(--base);font-family:"Space Mono",monospace;
+    font-weight:700;font-size:23px;letter-spacing:.14em;text-transform:uppercase;
+    padding:11px 20px;transform:rotate(-2deg)}
+  .pg{font-family:"Space Mono",monospace;font-weight:800;font-size:72px;line-height:1;background:var(--hit);
+    color:var(--base);padding:16px 26px;transform:rotate(3deg);direction:ltr;unicode-bidi:isolate;
+    box-shadow:6px 6px 0 rgba(0,0,0,.35);letter-spacing:-.02em;animation:popIn .5s .15s ease-out both}
+  .pg b{font-size:108px;font-weight:900}
+  @keyframes popIn{0%{opacity:0;transform:translateY(-12px) rotate(3deg) scale(.9)}100%{opacity:1;transform:translateY(0) rotate(3deg) scale(1)}}
+
+  .body{position:absolute;left:0;right:0;z-index:9;bottom:170px;padding:0 70px;
+    animation:fadeIn .55s .35s ease-out both}
+  @keyframes fadeIn{0%{opacity:0;transform:translateY(24px)}100%{opacity:1;transform:translateY(0)}}
+  .eyebrow{display:inline-block;font-weight:900;font-size:36px;color:var(--base);background:var(--hit);
+    padding:10px 22px;transform:rotate(-1.5deg);margin-bottom:26px;box-shadow:5px 5px 0 rgba(0,0,0,.35)}
+  h2{font-weight:900;color:var(--ink);line-height:1.02;letter-spacing:-.02em;font-size:96px;
+    text-shadow:0 4px 22px rgba(0,0,0,.7)}
+  mark{background:var(--hit);color:var(--base);padding:.02em .08em;display:inline-block;transform:skewX(-6deg)}
+
+  .foot{position:absolute;bottom:0;left:0;right:0;z-index:9;display:flex;justify-content:space-between;
+    align-items:center;background:var(--ink);color:var(--base);padding:22px 64px;height:104px}
+  .brand{display:flex;align-items:center;gap:14px;font-size:30px;font-weight:900}
+  .brand .handle{direction:ltr;unicode-bidi:isolate}
+  .brand small{display:block;font-size:17px;font-weight:700;opacity:.65;font-family:"Space Mono",monospace}
+  .dot{width:22px;height:22px;background:var(--hit);transform:rotate(45deg)}
+  .logo{height:58px;width:auto;display:block}
+</style>
+</head>
+<body class="t-blue">
+<script id="data" type="application/json">{"theme":"t-blue","bg":"","kicker":"PINK MEDIA","page":"03","total":"07","eyebrow":"","h":"","handle":"@bankhaltershay","sub":"PINK MEDIA"}</script>
+<div class="r">
+  <div class="bg"><div class="img"></div><div class="tint"></div><div class="grade"></div></div>
+  <div class="scrim"></div>
+  <div class="grain"></div>
+  <div class="top">
+    <div class="kick" id="kicker">PINK MEDIA</div>
+    <div class="pg" id="pg"><b>03</b> / 07</div>
+  </div>
+  <div class="body">
+    <span class="eyebrow" id="eyebrow"></span>
+    <h2 id="h"></h2>
+  </div>
+  <div class="foot">
+    <div class="brand"><span class="dot"></span>
+      <div><span class="handle" id="handle">@bankhaltershay</span><small id="sub">PINK MEDIA</small></div>
+    </div>
+    <img class="logo" src="https://res.cloudinary.com/duhfkgxer/image/upload/pink_carousel/pink_logo_main.png" alt="Pink">
+  </div>
+  <div class="frame"></div>
+</div>
+<script>
+  (function(){
+    var D=JSON.parse(document.getElementById('data').textContent);
+    var THEMES=['t-ink','t-cream','t-acid','t-blue','t-sun','t-grape','t-fire','t-cobalt','t-gold'];
+    document.body.className=THEMES.indexOf(D.theme)>=0?D.theme:'t-blue';
+    if(D.lang==='en'){document.documentElement.setAttribute('dir','ltr');document.documentElement.setAttribute('lang','en');}
+    if(D.bg) document.querySelector('.bg .img').style.backgroundImage="url('"+D.bg+"')";
+    document.getElementById('kicker').textContent=D.kicker||'PINK MEDIA';
+    document.getElementById('pg').innerHTML='<b>'+(D.page||'03')+'</b> / '+(D.total||'07');
+    document.getElementById('eyebrow').textContent=D.eyebrow||'';
+    document.getElementById('h').innerHTML=D.h||'';   /* innerHTML so <mark> renders */
+    document.getElementById('handle').textContent=D.handle||'@bankhaltershay';
+    document.getElementById('sub').textContent=D.sub||'PINK MEDIA';
+    function fit(){
+      var el=document.getElementById('h'); var body=document.querySelector('.body');
+      if(!el||!body) return;
+      var sz=parseFloat(getComputedStyle(el).fontSize), g=0;
+      while(g++<140 && sz>40 && (el.scrollWidth>body.clientWidth-30 || el.scrollHeight>body.clientHeight-120)){ sz-=3; el.style.fontSize=sz+'px'; }
+    }
+    if(document.fonts&&document.fonts.ready){document.fonts.ready.then(fit);}else{setTimeout(fit,150);}
+  })();
+</script>
+</body>
+</html>
