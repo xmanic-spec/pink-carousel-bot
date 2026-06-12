@@ -84,6 +84,18 @@ async function uploadPdfToCloudinary(buffer, hint) {
     // publisher when it succeeds so the comment scenario knows where to comment.
     first_comment: content.first_comment || '',
     first_comment_done: false,
+    // ManyChat comment-to-DM: the day's engagement question + the actual guide the
+    // commenter receives. dm_guide is stored as a ready-to-serve ManyChat "dynamic
+    // block" so the Make webhook returns it verbatim and ManyChat renders the DM
+    // bubbles directly (variable bubble count, no IML string surgery).
+    cta_question: content.cta_question || '',
+    dm_guide: JSON.stringify({
+      version: 'v2',
+      content: {
+        type: 'instagram',
+        messages: (content.dm_guide || []).map((t) => ({ type: 'text', text: String(t) })),
+      },
+    }),
     ig_media_id: '',
     story_url: '',
     posted_story: false,
@@ -180,12 +192,25 @@ async function uploadPdfToCloudinary(buffer, hint) {
 
   await browser.close();
 
-  const res = await fetch('https://' + MAKE_ZONE + '/api/v2/data-stores/' + DATASTORE_ID + '/data', {
+  let res = await fetch('https://' + MAKE_ZONE + '/api/v2/data-stores/' + DATASTORE_ID + '/data', {
     method: 'POST',
     headers: { 'Authorization': 'Token ' + token, 'Content-Type': 'application/json' },
     body: JSON.stringify({ data: recordData }),
   });
-  const jr = await res.json().catch(() => ({}));
+  let jr = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    // Never lose the day's post to a datastructure that does not know the ManyChat
+    // fields yet: retry once without them (the carousel itself is unaffected).
+    console.error('Make write failed (' + res.status + '), retrying without ManyChat fields:', JSON.stringify(jr).slice(0, 200));
+    const slim = { ...recordData };
+    delete slim.cta_question; delete slim.dm_guide;
+    res = await fetch('https://' + MAKE_ZONE + '/api/v2/data-stores/' + DATASTORE_ID + '/data', {
+      method: 'POST',
+      headers: { 'Authorization': 'Token ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data: slim }),
+    });
+    jr = await res.json().catch(() => ({}));
+  }
   if (!res.ok) throw new Error('Make API write failed: ' + res.status + ' ' + JSON.stringify(jr));
   console.log('QUEUED in Make:', res.status, JSON.stringify(jr));
   console.log('DONE: carousel for', date, 'will auto-publish at 19:00 Jerusalem.');

@@ -43,9 +43,10 @@
   /* image layers (full colour, brand-graded, never crushed to a flat rectangle) */
   .bg{position:absolute;z-index:1;overflow:hidden;background:#000}
   .bg .img{position:absolute;inset:-2px;background-size:cover;background-position:center;
-    filter:contrast(1.07) saturate(1.12) brightness(1.03)}
+    filter:contrast(1.1) saturate(1.18) brightness(1.03)}
   .bg .tint{position:absolute;inset:0;background:var(--hit);mix-blend-mode:overlay;opacity:.16}
   .bg .grade{position:absolute;inset:0;background:
+    linear-gradient(180deg,rgba(0,0,0,.08) 0%,transparent 30%,transparent 58%,rgba(0,0,0,.38) 100%),
     radial-gradient(120% 85% at 50% 30%,transparent 38%,rgba(0,0,0,.5) 100%)}
   .bg.real .tint{opacity:.07}
   .bg.empty{display:flex;align-items:center;justify-content:center;background:var(--hit)}
@@ -64,17 +65,23 @@
   .pg b{font-size:108px;font-weight:900}
   .foot{position:absolute;bottom:0;left:0;right:0;z-index:9;display:flex;
     justify-content:space-between;align-items:center;background:var(--ink);color:var(--base);
-    padding:22px 64px;height:104px}
+    padding:22px 64px;height:104px;border-top:7px solid var(--hit)}
   .brand{display:flex;align-items:center;gap:14px;font-size:30px;font-weight:900}
   .brand .handle{direction:ltr;unicode-bidi:isolate}
   .brand small{display:block;font-size:17px;font-weight:700;opacity:.65;font-family:"Space Mono",monospace}
   .dot{width:22px;height:22px;background:var(--hit);transform:rotate(45deg)}
   .logo{height:58px;width:auto;display:block}
-  .swipehint{position:absolute;left:0;right:0;bottom:104px;z-index:9;display:flex;
-    justify-content:flex-end;align-items:center;gap:10px;padding:8px 70px;
-    font-family:"Space Mono",monospace;font-weight:700;font-size:25px;color:var(--ink);
-    text-shadow:0 2px 10px rgba(0,0,0,.7)}
-  .swipehint .a{color:var(--hit);font-size:32px}
+  .swipehint{position:absolute;left:0;right:0;bottom:118px;z-index:9;display:flex;
+    justify-content:flex-end;align-items:center;padding:8px 64px}
+  .swipehint .chip{display:flex;align-items:center;gap:12px;background:rgba(0,0,0,.62);
+    border:2px solid var(--hit);border-radius:999px;padding:10px 26px;
+    font-family:"Space Mono",monospace;font-weight:700;font-size:25px;color:var(--ink)}
+  .swipehint .a{color:var(--hit);font-size:32px;line-height:1}
+  /* slide 6 (the "do this tomorrow" slide) earns an explicit save nudge — saves drive reach */
+  .savehint{position:absolute;right:64px;bottom:118px;z-index:9;display:flex;align-items:center;
+    gap:12px;background:var(--hit);color:var(--base);font-weight:900;font-size:27px;
+    padding:12px 26px;border-radius:999px;box-shadow:6px 6px 0 rgba(0,0,0,.45)}
+  .savehint svg{width:28px;height:28px;display:block}
 
   /* collage props (used by card + split for zine character) */
   .tape{position:absolute;z-index:5;width:220px;height:54px;background:rgba(255,255,255,.26);
@@ -90,13 +97,15 @@
   .body{position:absolute;left:0;right:0;z-index:9;display:flex;flex-direction:column;
     justify-content:center;padding:0 70px}
   .eyebrow{display:inline-block;align-self:flex-start;font-weight:900;font-size:30px;
-    color:var(--base);background:var(--hit);padding:8px 18px;transform:rotate(-1.5deg);margin-bottom:22px}
+    color:var(--base);background:var(--hit);padding:8px 18px;transform:rotate(-1.5deg);margin-bottom:22px;
+    box-shadow:5px 5px 0 rgba(0,0,0,.4)}
   h1,h2{font-weight:900;color:var(--ink);line-height:1.0;letter-spacing:-.02em;
     text-shadow:0 3px 22px rgba(0,0,0,.55)}
   h1{font-size:118px}
   h2{font-size:86px}
   mark{background:var(--hit);color:var(--base);padding:.02em .08em;box-decoration-break:clone;
-    -webkit-box-decoration-break:clone;display:inline-block;transform:skewX(-6deg)}
+    -webkit-box-decoration-break:clone;display:inline-block;transform:skewX(-6deg);
+    box-shadow:7px 7px 0 rgba(0,0,0,.4)}
   .sub{margin-top:26px;font-size:41px;font-weight:700;color:var(--ink);line-height:1.32;
     max-width:940px;border-right:9px solid var(--hit);padding-right:22px}
   .pill{display:inline-block;align-self:flex-start;margin-top:36px;background:var(--hit);
@@ -135,13 +144,32 @@
   .lay-card .body{top:792px;bottom:170px}
   .lay-card .idx{top:170px}
 
-  /* CTA: no image, maximum type energy, every layout collapses to this */
+  /* CTA: no image, maximum type energy, every layout collapses to this.
+     The centerpiece is a mock Instagram comment bar with the trigger keyword already
+     "typed in" — it shows the viewer EXACTLY what to do (comment-to-DM via ManyChat). */
   .slide.cta .bg,.slide.cta .scrim,.slide.cta .seam,.slide.cta .stage,
   .slide.cta .tape{display:none}
-  .slide.cta .body{top:300px;bottom:150px;height:auto;justify-content:flex-start}
-  .slide.cta h1{font-size:150px}
+  .slide.cta .body{top:250px;bottom:170px;height:auto;justify-content:flex-start}
+  .slide.cta h1{font-size:128px}
   .slide.cta .idx{top:120px;font-size:600px;opacity:.1}
-  .slide.cta .stamp{right:74px;top:300px}
+  .slide.cta .stamp{right:74px;top:270px}
+  .slide.cta .glow{position:absolute;z-index:1;width:1300px;height:1300px;left:-110px;bottom:-520px;
+    background:radial-gradient(circle,var(--hit) 0%,transparent 62%);opacity:.2;pointer-events:none}
+  .cbar{display:flex;align-items:center;gap:26px;margin-top:56px;background:#FFFFFF;color:#15151A;
+    border-radius:999px;padding:22px 30px;max-width:900px;
+    box-shadow:0 0 0 7px var(--hit),0 26px 60px rgba(0,0,0,.55)}
+  .cbar .avatar{width:84px;height:84px;border-radius:50%;flex:none;
+    background:linear-gradient(135deg,var(--hit) 0%,#15151A 130%)}
+  .cbar .word{font-size:62px;font-weight:900;letter-spacing:.01em}
+  .cbar .caret{width:6px;height:68px;background:var(--hit);flex:none}
+  .cbar .send{margin-inline-start:auto;width:96px;height:96px;border-radius:50%;flex:none;
+    background:var(--hit);display:flex;align-items:center;justify-content:center}
+  .cbar .send svg{width:50px;height:50px;display:block}
+  .cta-note{margin-top:34px;font-size:38px;font-weight:800;color:var(--ink);line-height:1.3;
+    display:flex;align-items:center;gap:16px}
+  .cta-note .dm{display:inline-flex;align-items:center;justify-content:center;flex:none;
+    width:62px;height:62px;border-radius:50%;border:3px solid var(--hit);color:var(--hit)}
+  .cta-note .dm svg{width:32px;height:32px;display:block}
 
   /* English (LTR) for the LinkedIn variant */
   [dir=ltr] .sub{border-right:0;border-left:9px solid var(--hit);padding-right:0;padding-left:22px}
@@ -166,6 +194,10 @@
     var LOGO='https://res.cloudinary.com/duhfkgxer/image/upload/pink_carousel/pink_logo_main.png';
     var pad=function(n){return (n<10?'0':'')+n;};
     var STAMP=EN?['HOT TAKE','INSIGHT','THE MOVE','NOW','URGENT','PINK']:['HOT TAKE','תובנה','המהלך','דחוף','עכשיו','PINK'];
+    // inline SVG (no emoji glyphs: the Hetzner render box has no color-emoji fonts)
+    var SEND='<svg viewBox="0 0 24 24" fill="none" stroke="#15151A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>';
+    var DMIC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.6 0-3.1-.4-4.4-1.2L3 20l1.2-5.1A8.5 8.5 0 1 1 21 11.5z"/></svg>';
+    var BMK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>';
     var root=document.getElementById('root');
     S.forEach(function(s,i){
       var n=i+1,isCta=s.type==='cta',big=(s.type==='hook'||isCta);
@@ -185,19 +217,32 @@
         : '';
       var props = isCta ? ''
         : '<div class="tape"></div><div class="stamp">'+STAMP[i%STAMP.length]+'</div>';
+      var bodyHtml;
+      if(isCta&&!EN){
+        // engagement CTA: the question + a mock IG comment bar with the keyword typed in
+        bodyHtml = '<div class="body">'
+          + (s.eyebrow?'<span class="eyebrow">'+s.eyebrow+'</span>':'')
+          + '<h1>'+(s.h||'')+'</h1>'
+          + '<div class="cbar"><span class="avatar"></span><span class="word">'+(s.pill||'מדריך')+'</span><span class="caret"></span><span class="send">'+SEND+'</span></div>'
+          + (s.sub?'<div class="cta-note"><span class="dm">'+DMIC+'</span><span>'+s.sub+'</span></div>':'')
+          + '</div>';
+      } else {
+        bodyHtml = '<div class="body">'
+          + (s.eyebrow?'<span class="eyebrow">'+s.eyebrow+'</span>':'')
+          + '<'+(big?'h1':'h2')+'>'+(s.h||'')+'</'+(big?'h1':'h2')+'>'
+          + (s.sub?'<div class="sub">'+s.sub+'</div>':'')
+          + (isCta&&s.pill?'<span class="pill">'+s.pill+'</span>':'')
+          + '</div>';
+      }
       div.innerHTML =
-        bgEl + stage
+        (isCta?'<div class="glow"></div>':'') + bgEl + stage
         + '<div class="grain"></div><div class="halftone"></div><div class="idx">'+pad(n)+'</div>'
         + props
         + '<div class="top"><div class="kick">'+(s.kicker||B.sub||'PINK MEDIA')+'</div>'
         + '<div class="pg"><b>'+pad(n)+'</b> / '+pad(N)+'</div></div>'
-        + '<div class="body">'
-        + (s.eyebrow?'<span class="eyebrow">'+s.eyebrow+'</span>':'')
-        + '<'+(big?'h1':'h2')+'>'+(s.h||'')+'</'+(big?'h1':'h2')+'>'
-        + (s.sub?'<div class="sub">'+s.sub+'</div>':'')
-        + (isCta&&s.pill?'<span class="pill">'+s.pill+'</span>':'')
-        + '</div>'
-        + (!isCta&&n<N?(EN?'<div class="swipehint"><span class="a">&#8594;</span>SWIPE</div>':'<div class="swipehint">החליקו<span class="a">&#8592;</span></div>'):'')
+        + bodyHtml
+        + (!isCta&&n<N?'<div class="swipehint"><span class="chip">'+(EN?'SWIPE<span class="a">&#8594;</span>':'החליקו<span class="a">&#8592;</span>')+'</span></div>':'')
+        + (!EN&&i===5?'<div class="savehint">'+BMK+'שמרו לבוקר מחר</div>':'')
         + '<div class="foot"><div class="brand"><span class="dot"></span>'
         + '<div><span class="handle">'+(B.handle||'@bankhaltershay')+'</span>'
         + '<small>'+(B.sub||'PINK MEDIA')+'</small></div></div>'

@@ -22,8 +22,13 @@ IRONCLAD WRITING RULES (obey all):
 - No news summary. The audience already read the headline. Interpret the 'so what': how it hits the bottom line or the marketing strategy.
 - Clean, short lines.
 
-STRUCTURE across the 7 slides: slide1 = cutting hook (break a myth / hot take / a critical problem the news creates). slides2-5 = strategic interpretation: what really happened under the surface and how it hits campaigns, traffic or conversions. slide6 = one concrete step to take tomorrow morning. slide7 = short natural CTA.
+STRUCTURE across the 7 slides: slide1 = cutting hook (break a myth / hot take / a critical problem the news creates). slides2-5 = strategic interpretation: what really happened under the surface and how it hits campaigns, traffic or conversions. slide6 = one concrete step to take tomorrow morning. slide7 = the ENGAGEMENT CTA (spec below).
 FORMAT: pick ONE presentation for the day and vary it day to day: myth-vs-reality, or manager checklist, or deep tactical analysis.
+ENGAGEMENT: the post must make people COMMENT, not just read. Write the slide1 hook as a take a marketing manager will want to argue with or agree with out loud. first_comment MUST end with one short, direct question to the audience.
+
+ENGAGEMENT CTA (slide 7 + caption ending): the single goal of slide 7 is to get a comment. Slide 7 fields: "h" = one short, direct Hebrew question offering a CONCRETE lead magnet tied to THIS exact story (a guide / checklist / prompt list / protection plan), e.g. 'רוצים את המדריך המלא איך מתכוננים לשינוי הזה?'. Never a generic 'want to learn more'. "sub" = exactly one short line: comment the word מדריך and it arrives in DM. "pill" = exactly the word מדריך. Also output "cta_question" = that same question as plain text. The Hebrew caption must END (right before the hashtags) with the question on its own line, then on the next line: תגיבו "מדריך" ושלחתי לכם אותו ישר ל-DM.
+
+DM GUIDE (the lead magnet itself): output "dm_guide" = array of 4-6 Hebrew strings. This is the actual guide a commenter receives in private DM, so it must FULLY DELIVER on the slide-7 promise: concrete, practical, immediately usable steps / checklist / prompts about today's story, written at the same senior level. Each string = one DM message bubble, under 850 characters, short lines. First bubble opens with one line confirming exactly what they are getting. Last bubble ends with: רוצה שנבנה לך את זה בעסק? כתבו כאן "מעוניין" ונדבר. Same ironclad writing rules apply.
 
 ART DIRECTION: also output "art" = ONE vivid, specific English sentence describing a DARING conceptual editorial PHOTOGRAPH that stops the scroll dead. It must be a real photograph (fashion / advertising campaign craft), but the staged scene should be bold, surprising, even absurd or surreal, while staying TIGHTLY connected to the meaning of THIS exact story. Favor an intense human moment: a person mid-scream with their mouth wide open, a shocking gesture, an impossible-but-on-point situation. Punchy high-contrast color is welcome. NEVER 3D / CGI / illustration / render (it must look like a real photo). NEVER a bland stock office, NEVER abstract shapes or empty space. Do not describe any text, readable screens or UI, letters, numbers or logos (a separate system renders all text). One concrete, evocative sentence.
 
@@ -32,7 +37,7 @@ GROWTH TAGGING: in the Hebrew caption, naturally weave in @mentions of 0-3 REAL,
 FIRST COMMENT: also output "first_comment" = ONE Hebrew sentence (about 120-180 chars) that delivers a STRONG extra insight NOT already in the 7 slides. It posts immediately as the first comment on the Instagram carousel and is meant to push engagement: the deeper truth behind the headline, a contrarian counter-take, the next-order effect a CEO will care about. Sharp and concrete. No generic openers, no "במילים אחרות", no em dash, no rule-of-three. End with one short hook question if it fits naturally.
 
 OUTPUT: return ONLY valid minified JSON, no markdown, no commentary, exactly this shape:
-{"caption":"<hebrew caption with @mentions woven in + 5-7 hashtags starting with #פינקמדיה>","art":"<one vivid English sentence: the single unforgettable conceptual hero image for this story, strong visual metaphor, no text/UI>","first_comment":"<one strong Hebrew sentence with the deeper insight, no generic openers>","brand":{"kicker":"Pink Media","handle":"@bankhaltershay","sub":"פינק מדיה · שיווק דיגיטלי"},"slides":[{"type":"hook","kicker":"...","eyebrow":"...","h":"... <mark>one phrase</mark> ...","sub":"1-2 short lines"},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"..."},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"..."},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"..."},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"..."},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"one action for tomorrow"},{"type":"cta","kicker":"Pink Media","eyebrow":"...","h":"...","sub":"...","pill":"short button text"}]}
+{"caption":"<hebrew caption with @mentions woven in, ending with the engagement question + the תגיבו מדריך line, then 5-7 hashtags starting with #פינקמדיה>","cta_question":"<the slide-7 question, plain text>","dm_guide":["<bubble 1>","<bubble 2>","..."],"art":"<one vivid English sentence: the single unforgettable conceptual hero image for this story, strong visual metaphor, no text/UI>","first_comment":"<one strong Hebrew sentence with the deeper insight, ending with a short question to the audience>","brand":{"kicker":"Pink Media","handle":"@bankhaltershay","sub":"פינק מדיה · שיווק דיגיטלי"},"slides":[{"type":"hook","kicker":"...","eyebrow":"...","h":"... <mark>one phrase</mark> ...","sub":"1-2 short lines"},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"..."},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"..."},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"..."},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"..."},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"one action for tomorrow"},{"type":"cta","kicker":"Pink Media","eyebrow":"...","h":"<the engagement question>","sub":"<one line: comment מדריך, get it in DM>","pill":"מדריך"}]}
 Keep every "h" short (renders very large). Keep "sub" about 2 short lines. Exactly 7 slides.`;
 
 async function anthropic(body) {
@@ -161,6 +166,30 @@ async function genStockPhoto(query) {
   content.caption = clean(content.caption);
   if (content.first_comment) content.first_comment = clean(content.first_comment);
   content.slides.forEach((sl) => { ['kicker', 'eyebrow', 'h', 'sub', 'pill'].forEach((k) => { if (sl[k] != null) sl[k] = clean(sl[k]); }); });
+  if (content.cta_question) content.cta_question = clean(content.cta_question);
+  if (Array.isArray(content.dm_guide)) content.dm_guide = content.dm_guide.map(clean).filter(Boolean);
+
+  // Engagement mechanic — enforced in code so a model slip never breaks the ManyChat
+  // trigger. The trigger keyword is FIXED ("מדריך"): one evergreen ManyChat automation
+  // covers every post, zero daily maintenance.
+  const KEYWORD = 'מדריך';
+  const cta = content.slides[6];
+  cta.type = 'cta';
+  cta.pill = KEYWORD;
+  if (!content.cta_question) content.cta_question = String(cta.h || '').replace(/<[^>]+>/g, '').trim();
+  if (!cta.sub || cta.sub.indexOf(KEYWORD) < 0) cta.sub = 'תגיבו "' + KEYWORD + '" ואני שולח לכם אותו ישר ל-DM';
+  if (content.caption.indexOf(KEYWORD) < 0) {
+    const q = content.cta_question || 'רוצים את המדריך המלא על זה?';
+    const tags = content.caption.match(/(\s*#[^\s#]+)+\s*$/);
+    const base = tags ? content.caption.slice(0, tags.index).trim() : content.caption.trim();
+    content.caption = base + '\n\n' + q + '\nתגיבו "' + KEYWORD + '" ושלחתי לכם אותו ישר ל-DM' + (tags ? '\n\n' + tags[0].trim() : '');
+  }
+  if (!Array.isArray(content.dm_guide) || !content.dm_guide.length) {
+    // never ship a comment bait without a deliverable: fall back to the slides' content
+    content.dm_guide = content.slides.slice(1, 6)
+      .map((s, i) => (i + 1) + '. ' + String(s.h || '').replace(/<[^>]+>/g, '') + '\n' + String(s.sub || ''))
+      .concat(['רוצה שנבנה לך את זה בעסק? כתבו כאן "מעוניין" ונדבר.']);
+  }
 
   // rotate visual theme by day-of-year so the feed never looks the same two days running
   const THEMES = ['t-ink', 't-cream', 't-acid', 't-blue', 't-sun', 't-grape', 't-fire', 't-cobalt', 't-gold'];
@@ -220,7 +249,7 @@ async function genStockPhoto(query) {
   try {
     const er = await anthropic({
       model: 'claude-sonnet-4-6', max_tokens: 3000,
-      system: 'You are a senior marketing, AI and PPC strategist at Pink Media. Adapt the given Hebrew carousel into a professional ENGLISH LinkedIn carousel for an international executive audience. Same story, same 7-slide structure, same sharp senior voice. Not a literal translation, a strong English rewrite. Ironclad: no em dash, no double hyphen, no rule-of-three padding, no generic openers. Return ONLY minified JSON: {"caption":"<english caption + 3-5 hashtags>","slides":[{"type":"hook|content|cta","kicker":"...","eyebrow":"...","h":"short headline","sub":"1-2 short lines","pill":"cta only"}]} with exactly 7 slides.',
+      system: 'You are a senior marketing, AI and PPC strategist at Pink Media. Adapt the given Hebrew carousel into a professional ENGLISH LinkedIn carousel for an international executive audience. Same story, same 7-slide structure, same sharp senior voice. Not a literal translation, a strong English rewrite. Slide 7: the Hebrew version uses an Instagram comment-keyword mechanic; do NOT copy it. Write a natural LinkedIn executive CTA instead (share your take in the comments / follow / DM). Ironclad: no em dash, no double hyphen, no rule-of-three padding, no generic openers. Return ONLY minified JSON: {"caption":"<english caption + 3-5 hashtags>","slides":[{"type":"hook|content|cta","kicker":"...","eyebrow":"...","h":"short headline","sub":"1-2 short lines","pill":"cta only"}]} with exactly 7 slides.',
       messages: [{ role: 'user', content: 'Hebrew caption:\n' + content.caption + '\n\nHebrew slides JSON:\n' + JSON.stringify(content.slides) }],
     });
     const et = (er.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
