@@ -14,7 +14,7 @@ if (!process.env.MAKE_API_TOKEN) { console.error('FATAL: MAKE_API_TOKEN missing'
 
 const SYSTEM = `You are a senior marketing, AI and automation strategist at the digital agency Pink Media. Audience: CEOs, marketing managers and business owners who care about the bottom line, ROI and competitive edge. All post text is in HEBREW.
 
-Produce ONE Instagram carousel (exactly 7 slides) about the single strongest AI / SEO / PPC marketing story from the LAST 3 DAYS.
+Produce ONE Instagram carousel (exactly 7 slides) about the single strongest, most shareable story from the LAST 3 DAYS. ARTIFICIAL INTELLIGENCE is the account primary lane: lead with AI news, AI tools, AI shifts and AI for marketing and business. Use SEO or PPC only when there is genuinely no strong AI story, or frame them through their AI angle. Optimize the story for shares and saves: pick angles that make a business person think I have to send this to someone.
 
 IRONCLAD WRITING RULES (obey all):
 - Zero AI style. Banned: 'בעידן הדיגיטלי של היום', 'תחזיקו חזק', 'צללו פנימה', 'הנוף המשתנה', 'חשוב לזכור', and any generic opener, drama or cliche. No em dash, no double hyphen, no rule-of-three patterns, no 'במילים אחרות'.
@@ -123,15 +123,18 @@ async function genStockPhoto(query) {
     const files = fs.existsSync(cdir) ? fs.readdirSync(cdir).filter(f => /^\d{4}-\d\d-\d\d\.json$/.test(f)).sort().slice(-6) : [];
     avoid = files.map(f => { try { const c = JSON.parse(fs.readFileSync(path.join(cdir, f))); return String((c.slides && c.slides[0] && c.slides[0].h) || c.caption || '').replace(/<[^>]+>/g, '').trim().slice(0, 90); } catch (_) { return ''; } }).filter(Boolean);
   } catch (_) {}
-  const avoidTxt = avoid.length ? ' Do NOT repeat the subject or angle of these recent posts: ' + avoid.map(a => '"' + a + '"').join('; ') + '. Pick a clearly different subject and vary between AI, SEO and PPC across days.' : '';
+  const avoidTxt = avoid.length ? ' Do NOT repeat the subject or angle of these recent posts: ' + avoid.map(a => '"' + a + '"').join('; ') + '. Pick a clearly different subject. AI is the primary lane, so lead with a fresh AI angle on most days and avoid repeating the same AI sub-topic back to back.' : '';
   // Compact prior-post performance briefing (free, local — empty string if the
   // insights collector has not produced data yet).
   let insightsTxt = '';
   try { const ins = require('./insights').summary(); if (ins) insightsTxt = '\n\n' + ins + '\n\n'; } catch (_) {}
+  // market-intel briefing (trending angles, hook patterns) — additive
+  let intelTxt = '';
+  try { const it = require('./intel').summary(); if (it) intelTxt = '\n\n' + it + '\n\n'; } catch (_) {}
   const winDay = (doy % 6 === 0); // roughly once a week: a real client-win post
   const userMsg = winDay
-    ? 'Today is ' + date + '. Pink Media is a digital marketing agency, official site https://pinkmedia.co.il . Use web_search to find ONE real, published client success/result that actually appears on pinkmedia.co.il (real metric or case study, e.g. ranking/traffic/leads growth). Build the 7-slide carousel as a confident, classy client-win story per the system rules (slide 1 hook = the headline result, middle = what was done and the impact, slide 7 = CTA). Use ONLY real figures verified on the site. If you cannot verify a real client result, instead produce the normal post about the single strongest AI/SEO/PPC news from the last 3 days.' + avoidTxt + insightsTxt + ' Output ONLY the JSON.'
-    : 'Today is ' + date + '. Research the last 3 days of AI, SEO and PPC marketing news and choose the single strongest story for the audience.' + avoidTxt + insightsTxt + ' Output ONLY the content JSON described in the system prompt.';
+    ? 'Today is ' + date + '. Pink Media is a digital marketing agency, official site https://pinkmedia.co.il . Use web_search to find ONE real, published client success/result that actually appears on pinkmedia.co.il (real metric or case study, e.g. ranking/traffic/leads growth). Build the 7-slide carousel as a confident, classy client-win story per the system rules (slide 1 hook = the headline result, middle = what was done and the impact, slide 7 = CTA). Use ONLY real figures verified on the site. If you cannot verify a real client result, instead produce the normal post about the single strongest AI/SEO/PPC news from the last 3 days.' + avoidTxt + insightsTxt + intelTxt + ' Output ONLY the JSON.'
+    : 'Today is ' + date + '. Research the last 3 days of AI news (new tools, models, launches, AI for marketing and business) and choose the single strongest, most shareable story. AI is the priority. Only fall back to a pure SEO or PPC story if there is genuinely no strong AI story this cycle.' + avoidTxt + insightsTxt + intelTxt + ' Output ONLY the content JSON described in the system prompt.';
   const j = await anthropic({
     model: 'claude-sonnet-4-6',
     max_tokens: 4000,
@@ -190,6 +193,7 @@ async function genStockPhoto(query) {
       .map((s, i) => (i + 1) + '. ' + String(s.h || '').replace(/<[^>]+>/g, '') + '\n' + String(s.sub || ''))
       .concat(['רוצה שנבנה לך את זה בעסק? כתבו כאן "מעוניין" ונדבר.']);
   }
+  if (process.env.DRY_RUN === '1') { console.log('=== DRY RUN CONTENT ===\n' + JSON.stringify(content, null, 2)); process.exit(0); }
 
   // rotate visual theme by day-of-year so the feed never looks the same two days running
   const THEMES = ['t-ink', 't-cream', 't-acid', 't-blue', 't-sun', 't-grape', 't-fire', 't-cobalt', 't-gold'];

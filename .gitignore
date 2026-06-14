@@ -5,3 +5,4 @@ content/*.json
 .env
 preview/
 insights/
+intel/
