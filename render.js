@@ -109,17 +109,11 @@ async function uploadPdfToCloudinary(buffer, hint) {
     console.log('slide', i, '->', recordData['img' + i]);
   }
 
-  // Slide 3 = mid-carousel video (1080x1350 mp4). img3 stays as the fallback in the
-  // queue so the publisher's mapper can degrade gracefully if vidSlide ever fails.
-  try {
-    const { renderVidSlide } = require('./vidSlide');
-    const vid3 = await renderVidSlide(content, date, 'he');
-    recordData.vid3 = vid3;
-    console.log('vid3 (slide 3 video) ->', vid3);
-  } catch (e) {
-    console.error('vid3 skipped (slide 3 stays as image):', e.message);
-    recordData.vid3 = '';
-  }
+  // Slide 3 video is DISABLED for the editorial/magazine redesign: a Ken-Burns video
+  // slide would break the cohesive magazine look, and skipping it saves the daily
+  // Playwright-video + ffmpeg + Cloudinary-video cost. Slide 3 stays a magazine image.
+  // (Re-enable by restoring the renderVidSlide call + a matching vidSlide design.)
+  recordData.vid3 = '';
 
   // Reel companion: rendered + uploaded only when ENABLE_REEL=1. Saves a substantial
   // chunk of pipeline time (Playwright video + ffmpeg + Cloudinary video upload).

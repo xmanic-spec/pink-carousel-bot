@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;800;900&family=Heebo:wght@300;500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   html,body{width:1080px}
@@ -13,271 +13,216 @@
   body.solo .slide{display:none}
   body.solo .slide.on{display:block}
 
-  /* dark-only neon palettes (the hit color rotates daily for a varied feed) */
-  .t-ink{--base:#0B0A0E;--ink:#FFFFFF;--hit:#FF2E88}
-  .t-cream{--base:#0C0D07;--ink:#F5FFE8;--hit:#C6FF1E}
-  .t-acid{--base:#080A14;--ink:#EAFBFF;--hit:#27E5FF}
-  .t-blue{--base:#04141A;--ink:#E9FFF8;--hit:#00E5A0}
-  .t-sun{--base:#120A06;--ink:#FFF0E0;--hit:#FF8A1E}
-  .t-grape{--base:#0E0716;--ink:#F3E9FF;--hit:#B57BFF}
-  .t-fire{--base:#140706;--ink:#FFEDE9;--hit:#FF4D3D}
-  .t-cobalt{--base:#060A18;--ink:#E8EEFF;--hit:#4D7CFF}
-  .t-gold{--base:#0F0C04;--ink:#FFF6E0;--hit:#FFD23D}
+  /* ===== EDITORIAL MAGAZINE SYSTEM — giant serif type, dark page, rotating accent =====
+     base/ink stay constant for a cohesive masthead; only --hit (accent) rotates daily. */
+  .t-ink{--hit:#FF2E88}
+  .t-cream{--hit:#C6FF1E}
+  .t-acid{--hit:#27E5FF}
+  .t-blue{--hit:#00E5A0}
+  .t-sun{--hit:#FF8A1E}
+  .t-grape{--hit:#B57BFF}
+  .t-fire{--hit:#FF5242}
+  .t-cobalt{--hit:#5B86FF}
+  .t-gold{--hit:#FFD23D}
 
   .slide{position:relative;width:1080px;height:1350px;overflow:hidden;
+    --base:#0C0B0E;--ink:#F4F1EA;--muted:#9C978C;--line:rgba(244,241,234,.18);
     background:var(--base);color:var(--ink);font-family:"Heebo",sans-serif}
-  .slide::before{content:"";position:absolute;inset:30px;border:2px dashed var(--ink);
-    opacity:.26;z-index:8;pointer-events:none}
 
-  /* texture identity (kept across every layout so the brand stays recognisable) */
-  .grain{position:absolute;inset:0;z-index:6;opacity:.07;mix-blend-mode:overlay;pointer-events:none;
-    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2'/></filter><rect width='220' height='220' filter='url(%23n)'/></svg>")}
-  .halftone{position:absolute;width:540px;height:540px;right:-150px;bottom:-160px;z-index:6;opacity:.34;
-    pointer-events:none;background-image:radial-gradient(var(--hit) 31%,transparent 32%);
-    background-size:30px 30px;-webkit-mask-image:linear-gradient(225deg,#000,transparent 72%)}
-  /* giant outline page-number behind the hero — visible enough to be a design element */
-  .idx{position:absolute;left:30px;top:130px;z-index:2;font-family:"Space Mono",monospace;font-weight:800;
-    font-size:640px;line-height:1;color:transparent;-webkit-text-stroke:5px var(--hit);
-    opacity:.12;user-select:none;pointer-events:none}
+  /* hairline page frame with a single accent tab — the magazine border */
+  .frame{position:absolute;inset:46px;border:1px solid var(--line);z-index:7;pointer-events:none}
+  .frame::before{content:"";position:absolute;right:-1px;top:62px;width:64px;height:5px;background:var(--hit)}
 
-  /* image layers (full colour, brand-graded, never crushed to a flat rectangle) */
-  .bg{position:absolute;z-index:1;overflow:hidden;background:#000}
-  .bg .img{position:absolute;inset:-2px;background-size:cover;background-position:center;
-    filter:contrast(1.1) saturate(1.18) brightness(1.03)}
-  .bg .tint{position:absolute;inset:0;background:var(--hit);mix-blend-mode:overlay;opacity:.16}
-  .bg .grade{position:absolute;inset:0;background:
-    linear-gradient(180deg,rgba(0,0,0,.08) 0%,transparent 30%,transparent 58%,rgba(0,0,0,.38) 100%),
-    radial-gradient(120% 85% at 50% 30%,transparent 38%,rgba(0,0,0,.5) 100%)}
-  .bg.real .tint{opacity:.07}
-  .bg.empty{display:flex;align-items:center;justify-content:center;background:var(--hit)}
-  .bg.empty b{font-family:"Space Mono",monospace;font-size:340px;color:var(--base);opacity:.22}
+  .grain{position:absolute;inset:0;z-index:6;opacity:.05;mix-blend-mode:screen;pointer-events:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>")}
 
-  /* header + footer: own solid backgrounds so they read on any image */
-  .top{position:absolute;top:0;left:0;right:0;z-index:9;display:flex;
-    justify-content:space-between;align-items:flex-start;padding:60px 64px 0}
-  .kick{display:inline-block;background:var(--ink);color:var(--base);font-family:"Space Mono",monospace;
-    font-weight:700;font-size:23px;letter-spacing:.14em;text-transform:uppercase;
-    padding:11px 20px;transform:rotate(-2deg)}
-  /* slide page indicator — significantly larger so it actually reads at a glance */
-  .pg{font-family:"Space Mono",monospace;font-weight:800;font-size:72px;line-height:1;background:var(--hit);
-    color:var(--base);padding:16px 26px;transform:rotate(3deg);direction:ltr;unicode-bidi:isolate;
-    box-shadow:6px 6px 0 rgba(0,0,0,.35);letter-spacing:-.02em}
-  .pg b{font-size:108px;font-weight:900}
-  .foot{position:absolute;bottom:0;left:0;right:0;z-index:9;display:flex;
-    justify-content:space-between;align-items:center;background:var(--ink);color:var(--base);
-    padding:22px 64px;height:104px;border-top:7px solid var(--hit)}
-  .brand{display:flex;align-items:center;gap:14px;font-size:30px;font-weight:900}
-  .brand .handle{direction:ltr;unicode-bidi:isolate}
-  .brand small{display:block;font-size:17px;font-weight:700;opacity:.65;font-family:"Space Mono",monospace}
-  .dot{width:22px;height:22px;background:var(--hit);transform:rotate(45deg)}
-  .logo{height:58px;width:auto;display:block}
-  .swipehint{position:absolute;left:0;right:0;bottom:118px;z-index:9;display:flex;
-    justify-content:flex-end;align-items:center;padding:8px 64px}
-  .swipehint .chip{display:flex;align-items:center;gap:12px;background:rgba(0,0,0,.62);
-    border:2px solid var(--hit);border-radius:999px;padding:10px 26px;
-    font-family:"Space Mono",monospace;font-weight:700;font-size:25px;color:var(--ink)}
-  .swipehint .a{color:var(--hit);font-size:32px;line-height:1}
-  /* slide 6 (the "do this tomorrow" slide) earns an explicit save nudge — saves drive reach */
-  .savehint{position:absolute;right:64px;bottom:118px;z-index:9;display:flex;align-items:center;
-    gap:12px;background:var(--hit);color:var(--base);font-weight:900;font-size:27px;
-    padding:12px 26px;border-radius:999px;box-shadow:6px 6px 0 rgba(0,0,0,.45)}
-  .savehint svg{width:28px;height:28px;display:block}
+  /* ---- masthead ---- */
+  .head{position:absolute;top:74px;left:78px;right:78px;z-index:9;display:flex;
+    justify-content:space-between;align-items:baseline}
+  .sec{font-family:"Space Mono",monospace;font-size:21px;font-weight:700;letter-spacing:.30em;
+    text-transform:uppercase;color:var(--muted)}
+  .sec b{color:var(--ink)}
+  .folio{font-family:"Frank Ruhl Libre",serif;font-weight:500;font-size:28px;color:var(--muted);
+    direction:ltr;unicode-bidi:isolate}
+  .folio b{color:var(--hit);font-weight:800}
 
-  /* collage props (used by card + split for zine character) */
-  .tape{position:absolute;z-index:5;width:220px;height:54px;background:rgba(255,255,255,.26);
-    transform:rotate(-21deg);box-shadow:0 2px 8px rgba(0,0,0,.3)}
-  .stamp{position:absolute;z-index:7;width:206px;height:206px;border:5px solid var(--hit);
-    border-radius:50%;display:flex;align-items:center;justify-content:center;transform:rotate(-12deg);
-    color:var(--hit);font-family:"Space Mono",monospace;font-weight:700;font-size:30px;
-    letter-spacing:.05em;text-align:center;background:rgba(0,0,0,.28)}
-  .stamp::after{content:"";position:absolute;inset:13px;border:2px dashed var(--hit);
-    border-radius:50%;opacity:.65}
+  /* ---- hero image plate ---- */
+  .plate{position:absolute;z-index:1;overflow:hidden;background:#000}
+  .plate .img{position:absolute;inset:0;background-size:cover;background-position:center;
+    filter:grayscale(.16) contrast(1.08) saturate(1.06) brightness(.96)}
+  .plate.real .img{filter:grayscale(.05) contrast(1.04) saturate(1.04) brightness(.98)}
+  .plate .duo{position:absolute;inset:0;background:var(--hit);mix-blend-mode:color;opacity:.13}
+  .plate .vig{position:absolute;inset:0}
+  .plate.empty{background:var(--base)}
+  .plate.empty .big{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-family:"Frank Ruhl Libre",serif;font-weight:900;font-size:520px;color:var(--hit);opacity:.10}
 
-  /* text block (shared); fit() shrinks h + sub so nothing ever clips */
-  .body{position:absolute;left:0;right:0;z-index:9;display:flex;flex-direction:column;
-    justify-content:center;padding:0 70px}
-  .eyebrow{display:inline-block;align-self:flex-start;font-weight:900;font-size:30px;
-    color:var(--base);background:var(--hit);padding:8px 18px;transform:rotate(-1.5deg);margin-bottom:22px;
-    box-shadow:5px 5px 0 rgba(0,0,0,.4)}
-  h1,h2{font-weight:900;color:var(--ink);line-height:1.0;letter-spacing:-.02em;
-    text-shadow:0 3px 22px rgba(0,0,0,.55)}
-  h1{font-size:118px}
-  h2{font-size:86px}
-  mark{background:var(--hit);color:var(--base);padding:.02em .08em;box-decoration-break:clone;
-    -webkit-box-decoration-break:clone;display:inline-block;transform:skewX(-6deg);
-    box-shadow:7px 7px 0 rgba(0,0,0,.4)}
-  .sub{margin-top:26px;font-size:41px;font-weight:700;color:var(--ink);line-height:1.32;
-    max-width:940px;border-right:9px solid var(--hit);padding-right:22px}
-  .pill{display:inline-block;align-self:flex-start;margin-top:36px;background:var(--hit);
-    color:var(--base);font-size:46px;font-weight:900;padding:26px 52px;transform:rotate(-2deg);
-    box-shadow:12px 12px 0 rgba(0,0,0,.45)}
+  .cap{position:absolute;z-index:9;font-family:"Frank Ruhl Libre",serif;font-style:italic;
+    font-size:24px;color:var(--muted);max-width:760px}
+  .cap::before{content:"";display:inline-block;width:26px;height:2px;background:var(--hit);
+    vertical-align:middle;margin-left:12px;margin-bottom:6px}
 
-  /* ===== LAYOUT A — bleed: full image + heavy bottom scrim, loud headline ===== */
-  .lay-bleed .bg{inset:0}
-  .lay-bleed .scrim{position:absolute;inset:0;z-index:3;pointer-events:none;background:
-    linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,0) 30%,rgba(0,0,0,.46) 50%,
-    rgba(0,0,0,.82) 70%,var(--base) 89%)}
-  .lay-bleed .body{bottom:178px;height:560px;top:auto}
-  .lay-bleed .sub{background:rgba(0,0,0,.34);padding:14px 22px 14px 0;backdrop-filter:blur(2px)}
-  .lay-bleed .stamp{right:70px;top:330px}
-  .lay-bleed .tape{display:none}
+  /* ---- body / headline ---- */
+  .body{position:absolute;left:78px;right:78px;z-index:9;display:flex;flex-direction:column;overflow:hidden}
+  .kick{display:inline-block;align-self:flex-start;font-family:"Space Mono",monospace;font-size:22px;
+    font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--hit);margin-bottom:24px}
+  h1,h2{font-family:"Frank Ruhl Libre",serif;font-weight:900;letter-spacing:-.01em;color:var(--ink)}
+  h1{font-size:140px;line-height:.95}
+  h2{font-size:96px;line-height:1.0}
+  mark{background:transparent;color:var(--hit);position:relative;white-space:nowrap}
+  mark::after{content:"";position:absolute;left:0;right:0;bottom:.05em;height:.09em;background:var(--hit);
+    opacity:.92;z-index:-1}
+  .deck{margin-top:32px;font-family:"Heebo",sans-serif;font-weight:500;font-size:38px;line-height:1.4;
+    color:var(--ink);max-width:880px;padding-right:24px;border-right:3px solid var(--hit)}
+  .deck b{font-weight:900}
 
-  /* ===== LAYOUT B — split: big image band over a solid dark text zone ===== */
-  .lay-split .bg{left:0;right:0;top:0;height:624px}
-  .lay-split .bg .grade{background:linear-gradient(180deg,rgba(0,0,0,.14) 0%,
-    rgba(0,0,0,0) 34%,rgba(0,0,0,.22) 74%,var(--base) 100%)}
-  .lay-split .seam{position:absolute;left:0;right:0;top:612px;height:14px;z-index:4;
-    background:var(--hit)}
-  .lay-split .body{top:660px;bottom:150px;justify-content:flex-start;padding-top:30px}
-  .lay-split .stamp{right:62px;top:486px}
-  .lay-split .tape{top:-10px;right:300px}
-  .lay-split .idx{top:632px;font-size:380px;opacity:.05}
+  /* ---- bottom folio ---- */
+  .foot{position:absolute;left:78px;right:78px;bottom:72px;z-index:9;display:flex;
+    align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:20px}
+  .who{display:flex;align-items:center;gap:16px}
+  .who .logo{height:30px;width:auto;display:block;opacity:.95}
+  .who .hdl{font-family:"Space Mono",monospace;font-size:22px;font-weight:700;letter-spacing:.04em;
+    color:var(--ink);direction:ltr;unicode-bidi:isolate}
+  .who .hdl span{color:var(--muted)}
+  .swipe{font-family:"Space Mono",monospace;font-size:21px;font-weight:700;color:var(--muted);
+    letter-spacing:.1em}
+  .swipe b{color:var(--hit);font-size:26px}
+  .prog{display:flex;gap:8px;align-items:center}
+  .prog i{width:24px;height:3px;background:var(--line);display:block}
+  .prog i.on{background:var(--hit);width:40px}
 
-  /* ===== LAYOUT C — card: maximalist zine hero card on the dark base ===== */
-  .lay-card .stage{position:absolute;left:0;right:0;top:120px;height:650px;z-index:4}
-  .lay-card .block{position:absolute;width:820px;height:560px;top:44px;right:96px;
-    background:var(--hit);transform:rotate(2.6deg)}
-  .lay-card .photo{position:absolute;top:0;right:150px;width:820px;height:560px;overflow:hidden;
-    border:10px solid var(--ink);box-shadow:18px 20px 0 rgba(0,0,0,.5);transform:rotate(-1.9deg)}
-  .lay-card .tape{top:-12px;right:300px}
-  .lay-card .stamp{left:70px;top:418px}
-  .lay-card .body{top:792px;bottom:170px}
-  .lay-card .idx{top:170px}
+  /* giant ghost folio numeral behind interior type */
+  .idx{position:absolute;z-index:2;font-family:"Frank Ruhl Libre",serif;font-weight:900;
+    font-size:300px;line-height:.7;color:transparent;-webkit-text-stroke:1px var(--line);
+    opacity:.6;user-select:none;pointer-events:none;direction:ltr}
 
-  /* CTA: no image, maximum type energy, every layout collapses to this.
-     The centerpiece is a mock Instagram comment bar with the trigger keyword already
-     "typed in" — it shows the viewer EXACTLY what to do (comment-to-DM via ManyChat). */
-  .slide.cta .bg,.slide.cta .scrim,.slide.cta .seam,.slide.cta .stage,
-  .slide.cta .tape{display:none}
-  .slide.cta .body{top:250px;bottom:170px;height:auto;justify-content:flex-start}
-  .slide.cta h1{font-size:128px}
-  .slide.cta .idx{top:120px;font-size:600px;opacity:.1}
-  .slide.cta .stamp{right:74px;top:270px}
-  .slide.cta .glow{position:absolute;z-index:1;width:1300px;height:1300px;left:-110px;bottom:-520px;
-    background:radial-gradient(circle,var(--hit) 0%,transparent 62%);opacity:.2;pointer-events:none}
-  .cbar{display:flex;align-items:center;gap:26px;margin-top:56px;background:#FFFFFF;color:#15151A;
-    border-radius:999px;padding:22px 30px;max-width:900px;
-    box-shadow:0 0 0 7px var(--hit),0 26px 60px rgba(0,0,0,.55)}
-  .cbar .avatar{width:84px;height:84px;border-radius:50%;flex:none;
-    background:linear-gradient(135deg,var(--hit) 0%,#15151A 130%)}
-  .cbar .word{font-size:62px;font-weight:900;letter-spacing:.01em}
-  .cbar .caret{width:6px;height:68px;background:var(--hit);flex:none}
-  .cbar .send{margin-inline-start:auto;width:96px;height:96px;border-radius:50%;flex:none;
-    background:var(--hit);display:flex;align-items:center;justify-content:center}
-  .cbar .send svg{width:50px;height:50px;display:block}
-  .cta-note{margin-top:34px;font-size:38px;font-weight:800;color:var(--ink);line-height:1.3;
-    display:flex;align-items:center;gap:16px}
-  .cta-note .dm{display:inline-flex;align-items:center;justify-content:center;flex:none;
-    width:62px;height:62px;border-radius:50%;border:3px solid var(--hit);color:var(--hit)}
-  .cta-note .dm svg{width:32px;height:32px;display:block}
+  /* ===== COVER (hook): full-bleed photo, giant type bottom ===== */
+  .cover .plate{inset:0}
+  .cover .plate .vig{background:
+    linear-gradient(180deg,rgba(12,11,14,.28) 0%,rgba(12,11,14,0) 30%,rgba(12,11,14,.55) 62%,var(--base) 94%)}
+  .cover .body{top:560px;bottom:150px;justify-content:flex-end}
+  .cover .cap{display:none}
+  .cover .idx{display:none}
 
-  /* English (LTR) for the LinkedIn variant */
-  [dir=ltr] .sub{border-right:0;border-left:9px solid var(--hit);padding-right:0;padding-left:22px}
-  [dir=ltr] .lay-bleed .sub{padding:14px 0 14px 22px}
-  [dir=ltr] .swipehint{justify-content:flex-start}
+  /* ===== INTERIOR (content): photo plate top, giant type below ===== */
+  .interior .plate{left:46px;right:46px;top:138px;height:512px}
+  .interior .plate .vig{background:
+    linear-gradient(180deg,rgba(12,11,14,.12) 0%,rgba(12,11,14,0) 64%,var(--base) 100%)}
+  .interior .cap{left:78px;right:78px;top:596px}
+  .interior .idx{left:56px;top:678px}
+  .interior .body{top:702px;bottom:140px;justify-content:flex-start}
+  .interior h2{font-size:92px}
+
+  /* ===== CTA (back cover): dimmed photo, question + editorial comment bar ===== */
+  .cta .plate{inset:0}
+  .cta .plate .img{filter:grayscale(.42) contrast(1.04) brightness(.46)}
+  .cta .plate .vig{background:linear-gradient(180deg,rgba(12,11,14,.52),rgba(12,11,14,.86))}
+  .cta .body{top:286px;bottom:140px;justify-content:flex-start}
+  .cta h1{font-size:104px;line-height:1.0}
+  .cta .idx{display:none}
+  .cbar{display:flex;align-items:center;gap:22px;margin-top:50px;background:var(--ink);color:var(--base);
+    padding:24px 30px;max-width:884px;box-shadow:16px 16px 0 var(--hit)}
+  .cbar .av{width:72px;height:72px;border-radius:50%;flex:none;
+    background:radial-gradient(circle at 32% 30%,var(--hit),#15151A 130%)}
+  .cbar .w{font-family:"Frank Ruhl Libre",serif;font-weight:900;font-size:56px;line-height:1}
+  .cbar .car{width:5px;height:58px;background:var(--hit);flex:none}
+  .cbar .snd{margin-inline-start:auto;display:flex;align-items:center;gap:10px;
+    font-family:"Space Mono",monospace;font-weight:700;font-size:23px;letter-spacing:.08em;text-transform:uppercase}
+  .cbar .snd svg{width:30px;height:30px;display:block}
+  .ctanote{margin-top:28px;font-family:"Heebo",sans-serif;font-weight:700;font-size:34px;color:var(--ink);
+    display:flex;align-items:center;gap:14px}
+  .ctanote b{color:var(--hit)}
+  .ctanote .dm{display:inline-flex;align-items:center;justify-content:center;flex:none;width:56px;height:56px;
+    border-radius:50%;border:2px solid var(--hit);color:var(--hit)}
+  .ctanote .dm svg{width:28px;height:28px;display:block}
+
+  /* English (LTR) tweaks for the LinkedIn variant */
+  [dir=ltr] .sec{letter-spacing:.22em}
+  [dir=ltr] .deck{border-right:0;border-left:3px solid var(--hit);padding-right:0;padding-left:24px}
+  [dir=ltr] .cap::before{margin-left:0;margin-right:12px}
+  [dir=ltr] h1,[dir=ltr] h2{letter-spacing:-.015em}
 </style>
 </head>
 <body>
-<script id="data" type="application/json">{"theme":"t-ink","layout":"card","brand":{"handle":"@bankhaltershay","sub":"PINK MEDIA"},"slides":[]}</script>
+<script id="data" type="application/json">{"theme":"t-ink","layout":"cover","brand":{"handle":"@bankhaltershay","sub":"PINK MEDIA"},"slides":[]}</script>
 <div id="root"></div>
 <script>
   (function(){
     var D=JSON.parse(document.getElementById('data').textContent);
     var THEMES=['t-ink','t-cream','t-acid','t-blue','t-sun','t-grape','t-fire','t-cobalt','t-gold'];
-    var LAYOUTS=['bleed','split','card'];
     var theme=THEMES.indexOf(D.theme)>=0?D.theme:'t-ink';
-    var layout=LAYOUTS.indexOf(D.layout)>=0?D.layout:'card';
     var B=D.brand||{},S=D.slides||[],N=S.length,bg=D.bg||'';
     var real=D.bgreal?' real':'';
     var EN=(D.lang==='en');
     if(EN){document.documentElement.setAttribute('dir','ltr');document.documentElement.setAttribute('lang','en');}
     var LOGO='https://res.cloudinary.com/duhfkgxer/image/upload/pink_carousel/pink_logo_main.png';
+    var SECTION=EN?'AI & MARKETING':'AI ושיווק';
     var pad=function(n){return (n<10?'0':'')+n;};
-    var STAMP=EN?['HOT TAKE','INSIGHT','THE MOVE','NOW','URGENT','PINK']:['HOT TAKE','תובנה','המהלך','דחוף','עכשיו','PINK'];
-    // inline SVG (no emoji glyphs: the Hetzner render box has no color-emoji fonts)
-    var SEND='<svg viewBox="0 0 24 24" fill="none" stroke="#15151A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>';
+    var SEND='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>';
     var DMIC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.6 0-3.1-.4-4.4-1.2L3 20l1.2-5.1A8.5 8.5 0 1 1 21 11.5z"/></svg>';
-    var BMK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>';
     var root=document.getElementById('root');
+
     S.forEach(function(s,i){
-      var n=i+1,isCta=s.type==='cta',big=(s.type==='hook'||isCta);
-      var showImg=!!bg&&!isCta;
+      var n=i+1,isHook=s.type==='hook',isCta=s.type==='cta';
+      var mode=isHook?'cover':(isCta?'cta':'interior');
+      var showImg=!!bg;
       var div=document.createElement('div');
-      div.className='slide '+theme+' lay-'+layout+(isCta?' cta':'');
+      div.className='slide '+theme+' '+mode;
       div.id='s'+n;
-      var imgInner = showImg
-        ? '<div class="img" style="background-image:url(\''+bg+'\')"></div><div class="tint"></div><div class="grade"></div>'
-        : (isCta?'':'<b>'+pad(n)+'</b>');
-      var bgEl = isCta ? ''
-        : '<div class="bg'+real+(showImg?'':' empty')+'">'+imgInner+'</div>'
-          + (layout==='bleed'?'<div class="scrim"></div>':'')
-          + (layout==='split'?'<div class="seam"></div>':'');
-      var stage = (layout==='card'&&!isCta)
-        ? '<div class="stage"><div class="block"></div></div>'
-        : '';
-      var props = isCta ? ''
-        : '<div class="tape"></div><div class="stamp">'+STAMP[i%STAMP.length]+'</div>';
-      var bodyHtml;
-      if(isCta&&!EN){
-        // engagement CTA: the question + a mock IG comment bar with the keyword typed in
-        bodyHtml = '<div class="body">'
-          + (s.eyebrow?'<span class="eyebrow">'+s.eyebrow+'</span>':'')
-          + '<h1>'+(s.h||'')+'</h1>'
-          + '<div class="cbar"><span class="avatar"></span><span class="word">'+(s.pill||'מדריך')+'</span><span class="caret"></span><span class="send">'+SEND+'</span></div>'
-          + (s.sub?'<div class="cta-note"><span class="dm">'+DMIC+'</span><span>'+s.sub+'</span></div>':'')
-          + '</div>';
+
+      var plateInner = showImg
+        ? '<div class="img" style="background-image:url(\''+bg+'\')"></div><div class="duo"></div><div class="vig"></div>'
+        : '<div class="big">'+pad(n)+'</div>';
+      var plate='<div class="plate'+real+(showImg?'':' empty')+'">'+plateInner+'</div>';
+
+      var bodyInner;
+      if(isCta){
+        var kw=s.pill||(EN?'GUIDE':'מדריך');
+        var note=s.sub||(EN?'Comment "'+kw+'" and I will send it to your DM':'תגיבו "'+kw+'" ואני שולח לכם אותו ישר ל-DM');
+        bodyInner='<span class="kick">'+(s.kicker||'PINK MEDIA')+'</span>'
+          +'<h1>'+(s.h||'')+'</h1>'
+          +'<div class="cbar"><span class="av"></span><span class="w">'+kw+'</span><span class="car"></span>'
+          +'<span class="snd">'+(EN?'SEND':'שליחה')+SEND+'</span></div>'
+          +'<div class="ctanote"><span class="dm">'+DMIC+'</span><span>'+note+'</span></div>';
       } else {
-        bodyHtml = '<div class="body">'
-          + (s.eyebrow?'<span class="eyebrow">'+s.eyebrow+'</span>':'')
-          + '<'+(big?'h1':'h2')+'>'+(s.h||'')+'</'+(big?'h1':'h2')+'>'
-          + (s.sub?'<div class="sub">'+s.sub+'</div>':'')
-          + (isCta&&s.pill?'<span class="pill">'+s.pill+'</span>':'')
-          + '</div>';
+        var tag=isHook?'h1':'h2';
+        bodyInner='<span class="kick">'+(s.kicker||s.eyebrow||'')+'</span>'
+          +'<'+tag+'>'+(s.h||'')+'</'+tag+'>'
+          +(s.sub?'<div class="deck">'+s.sub+'</div>':'');
       }
-      div.innerHTML =
-        (isCta?'<div class="glow"></div>':'') + bgEl + stage
-        + '<div class="grain"></div><div class="halftone"></div><div class="idx">'+pad(n)+'</div>'
-        + props
-        + '<div class="top"><div class="kick">'+(s.kicker||B.sub||'PINK MEDIA')+'</div>'
-        + '<div class="pg"><b>'+pad(n)+'</b> / '+pad(N)+'</div></div>'
-        + bodyHtml
-        + (!isCta&&n<N?'<div class="swipehint"><span class="chip">'+(EN?'SWIPE<span class="a">&#8594;</span>':'החליקו<span class="a">&#8592;</span>')+'</span></div>':'')
-        + (!EN&&i===5?'<div class="savehint">'+BMK+'שמרו לבוקר מחר</div>':'')
-        + '<div class="foot"><div class="brand"><span class="dot"></span>'
-        + '<div><span class="handle">'+(B.handle||'@bankhaltershay')+'</span>'
-        + '<small>'+(B.sub||'PINK MEDIA')+'</small></div></div>'
-        + '<img class="logo" src="'+LOGO+'" alt="Pink">'
-        + '</div>';
-      // card mode: the photo card lives inside the stage, behind the props
-      if(layout==='card'&&showImg){
-        var st=div.querySelector('.stage');
-        var ph=document.createElement('div');
-        ph.className='photo';
-        ph.innerHTML='<div class="bg'+real+'" style="position:absolute;inset:0">'
-          +'<div class="img" style="background-image:url(\''+bg+'\')"></div>'
-          +'<div class="tint"></div><div class="grade"></div></div>';
-        st.appendChild(ph);
-      } else if(layout==='card'&&!isCta){
-        var st2=div.querySelector('.stage');
-        var pe=document.createElement('div');
-        pe.className='photo';
-        pe.innerHTML='<div class="bg empty" style="position:absolute;inset:0"><b>'+pad(n)+'</b></div>';
-        st2.appendChild(pe);
-      }
+
+      div.innerHTML=
+        plate
+        +'<div class="grain"></div><div class="frame"></div>'
+        +'<div class="head"><div class="sec">PINK MEDIA — <b>'+SECTION+'</b></div>'
+        +'<div class="folio">№ <b>'+pad(n)+'</b> / '+pad(N)+'</div></div>'
+        +(mode==='interior'?'<div class="idx">'+pad(n)+'</div>'+(s.eyebrow?'<div class="cap">'+s.eyebrow+'</div>':''):'')
+        +'<div class="body">'+bodyInner+'</div>'
+        +'<div class="foot"><div class="who"><img class="logo" src="'+LOGO+'" alt="Pink">'
+        +'<span class="hdl">'+(B.handle||'@bankhaltershay')+' <span>· '+(EN?'Pink Media':'פינק מדיה')+'</span></span></div>'
+        +(isCta
+            ? '<div class="prog">'+S.map(function(_,k){return '<i class="'+(k===i?'on':'')+'"></i>';}).join('')+'</div>'
+            : (n<N?'<div class="swipe">'+(EN?'SWIPE <b>&#8594;</b>':'החליקו <b>&#8592;</b>')+'</div>':'<div class="prog">'+S.map(function(_,k){return '<i class="'+(k===i?'on':'')+'"></i>';}).join('')+'</div>'))
+        +'</div>';
       root.appendChild(div);
     });
+
     var hsh=location.hash.replace('#','');
     if(hsh){document.body.classList.add('solo');var el=document.getElementById(hsh);if(el)el.classList.add('on');}
+
+    // auto-fit: shrink headline (and deck) until everything fits its body zone — nothing ever clips
     function fit(){
       document.querySelectorAll('.slide').forEach(function(sl){
-        if(sl.offsetParent===null) return;
+        if(sl.offsetParent===null && !document.body.classList.contains('solo')) {}
         var head=sl.querySelector('h1,h2'), body=sl.querySelector('.body');
         if(!head||!body) return;
         var sz=parseFloat(getComputedStyle(head).fontSize), g=0;
-        while(g++<160 && sz>40 && (head.scrollWidth>head.clientWidth+1 || body.scrollHeight>body.clientHeight+1)){ sz-=3; head.style.fontSize=sz+'px'; }
-        var sub=sl.querySelector('.sub'), s2=0;
-        if(sub){ var ss=parseFloat(getComputedStyle(sub).fontSize);
-          while(s2++<80 && ss>20 && body.scrollHeight>body.clientHeight+1){ ss-=2; sub.style.fontSize=ss+'px'; } }
+        while(g++<200 && sz>34 && (head.scrollWidth>head.clientWidth+1 || body.scrollHeight>body.clientHeight+1)){
+          sz-=3; head.style.fontSize=sz+'px';
+        }
+        var deck=sl.querySelector('.deck'), d=0;
+        if(deck){ var ds=parseFloat(getComputedStyle(deck).fontSize);
+          while(d++<90 && ds>20 && body.scrollHeight>body.clientHeight+1){ ds-=2; deck.style.fontSize=ds+'px'; } }
       });
     }
     if(document.fonts&&document.fonts.ready){document.fonts.ready.then(fit);}else{fit();}
