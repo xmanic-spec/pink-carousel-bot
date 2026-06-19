@@ -26,9 +26,9 @@ STRUCTURE across the 7 slides: slide1 = cutting hook (break a myth / hot take / 
 FORMAT: pick ONE presentation for the day and vary it day to day: myth-vs-reality, or manager checklist, or deep tactical analysis.
 ENGAGEMENT: the post must make people COMMENT, not just read. Write the slide1 hook as a take a marketing manager will want to argue with or agree with out loud. first_comment MUST end with one short, direct question to the audience.
 
-ENGAGEMENT CTA (slide 7 + caption ending): the single goal of slide 7 is to get a comment. Slide 7 fields: "h" = one short, direct Hebrew question offering a CONCRETE lead magnet tied to THIS exact story (a guide / checklist / prompt list / protection plan), e.g. 'רוצים את המדריך המלא איך מתכוננים לשינוי הזה?'. Never a generic 'want to learn more'. "sub" = exactly one short line: comment the word מדריך and it arrives in DM. "pill" = exactly the word מדריך. Also output "cta_question" = that same question as plain text. The Hebrew caption must END (right before the hashtags) with the question on its own line, then on the next line: תגיבו "מדריך" ושלחתי לכם אותו ישר ל-DM.
+ENGAGEMENT CTA (slide 7 + caption ending): the single goal of slide 7 is to get a comment. First output "cta_keyword" = ONE word chosen ONLY from this exact set [מדריך, סקיל, שלח, שגר, AI, SEO], whichever best fits THIS post (an SEO topic -> "SEO"; an AI tool/skill -> "סקיל" or "AI"; otherwise -> "מדריך"). Use that SAME chosen word everywhere below. Slide 7 fields: "h" = one short, direct Hebrew question offering a CONCRETE lead magnet tied to THIS exact story (a guide / checklist / prompt list / protection plan), e.g. 'רוצים את המדריך המלא איך מתכוננים לשינוי הזה?'. Never a generic 'want to learn more'. "sub" = exactly one short line: comment your chosen word and it arrives in DM. "pill" = exactly your chosen word. Also output "cta_question" = that same question as plain text. The lead magnet itself ALWAYS lives on the Pink Media site https://pinkmedia.co.il . The Hebrew caption must END (right before the hashtags) with the question on its own line, then on the next line: תגיבו "<your chosen word>" ושלחתי לכם אותו ישר ל-DM.
 
-DM GUIDE (the lead magnet itself): output "dm_guide" = array of 4-6 Hebrew strings. This is the actual guide a commenter receives in private DM, so it must FULLY DELIVER on the slide-7 promise: concrete, practical, immediately usable steps / checklist / prompts about today's story, written at the same senior level. Each string = one DM message bubble, under 850 characters, short lines. First bubble opens with one line confirming exactly what they are getting. Last bubble ends with: רוצה שנבנה לך את זה בעסק? כתבו כאן "מעוניין" ונדבר. Same ironclad writing rules apply.
+DM GUIDE (the lead magnet itself): output "dm_guide" = array of 4-6 Hebrew strings. This is the actual guide a commenter receives in private DM, so it must FULLY DELIVER on the slide-7 promise: concrete, practical, immediately usable steps / checklist / prompts about today's story, written at the same senior level. Each string = one DM message bubble, under 850 characters, short lines. First bubble opens with one line confirming exactly what they are getting. One bubble MUST include the link to the full guide and tools on the Pink Media site: https://pinkmedia.co.il . Last bubble ends with: רוצה שנבנה לך את זה בעסק? כתבו כאן "מעוניין" ונדבר. Same ironclad writing rules apply.
 
 ART DIRECTION: also output "art" = ONE vivid, specific English sentence describing a DARING conceptual editorial PHOTOGRAPH that stops the scroll dead. It must be a real photograph (fashion / advertising campaign craft), but the staged scene should be bold, surprising, even absurd or surreal, while staying TIGHTLY connected to the meaning of THIS exact story. Favor an intense human moment: a person mid-scream with their mouth wide open, a shocking gesture, an impossible-but-on-point situation. Punchy high-contrast color is welcome. NEVER 3D / CGI / illustration / render (it must look like a real photo). NEVER a bland stock office, NEVER abstract shapes or empty space. Do not describe any text, readable screens or UI, letters, numbers or logos (a separate system renders all text). One concrete, evocative sentence.
 
@@ -37,7 +37,7 @@ GROWTH TAGGING: in the Hebrew caption, naturally weave in @mentions of 0-3 REAL,
 FIRST COMMENT: also output "first_comment" = ONE Hebrew sentence (about 120-180 chars) that delivers a STRONG extra insight NOT already in the 7 slides. It posts immediately as the first comment on the Instagram carousel and is meant to push engagement: the deeper truth behind the headline, a contrarian counter-take, the next-order effect a CEO will care about. Sharp and concrete. No generic openers, no "במילים אחרות", no em dash, no rule-of-three. End with one short hook question if it fits naturally.
 
 OUTPUT: return ONLY valid minified JSON, no markdown, no commentary, exactly this shape:
-{"caption":"<hebrew caption with @mentions woven in, ending with the engagement question + the תגיבו מדריך line, then 5-7 hashtags starting with #פינקמדיה>","cta_question":"<the slide-7 question, plain text>","dm_guide":["<bubble 1>","<bubble 2>","..."],"art":"<one vivid English sentence: the single unforgettable conceptual hero image for this story, strong visual metaphor, no text/UI>","first_comment":"<one strong Hebrew sentence with the deeper insight, ending with a short question to the audience>","brand":{"kicker":"Pink Media","handle":"@bankhaltershay","sub":"פינק מדיה · שיווק דיגיטלי"},"slides":[{"type":"hook","kicker":"...","eyebrow":"...","h":"... <mark>one phrase</mark> ...","sub":"1-2 short lines"},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"..."},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"..."},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"..."},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"..."},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"one action for tomorrow"},{"type":"cta","kicker":"Pink Media","eyebrow":"...","h":"<the engagement question>","sub":"<one line: comment מדריך, get it in DM>","pill":"מדריך"}]}
+{"caption":"<hebrew caption with @mentions woven in, ending with the engagement question + the תגיבו מדריך line, then 5-7 hashtags starting with #פינקמדיה>","cta_keyword":"<ONE word, ONLY from: מדריך / סקיל / שלח / שגר / AI / SEO>","cta_question":"<the slide-7 question, plain text>","dm_guide":["<bubble 1>","<bubble 2>","..."],"art":"<one vivid English sentence: the single unforgettable conceptual hero image for this story, strong visual metaphor, no text/UI>","first_comment":"<one strong Hebrew sentence with the deeper insight, ending with a short question to the audience>","brand":{"kicker":"Pink Media","handle":"@bankhaltershay","sub":"פינק מדיה · שיווק דיגיטלי"},"slides":[{"type":"hook","kicker":"...","eyebrow":"...","h":"... <mark>one phrase</mark> ...","sub":"1-2 short lines"},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"..."},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"..."},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"..."},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"..."},{"type":"content","kicker":"...","eyebrow":"...","h":"...","sub":"one action for tomorrow"},{"type":"cta","kicker":"Pink Media","eyebrow":"...","h":"<the engagement question>","sub":"<one line: comment מדריך, get it in DM>","pill":"מדריך"}]}
 Keep every "h" short (renders very large). Keep "sub" about 2 short lines. Exactly 7 slides.`;
 
 async function anthropic(body) {
@@ -173,9 +173,12 @@ async function genStockPhoto(query) {
   if (Array.isArray(content.dm_guide)) content.dm_guide = content.dm_guide.map(clean).filter(Boolean);
 
   // Engagement mechanic — enforced in code so a model slip never breaks the ManyChat
-  // trigger. The trigger keyword is FIXED ("מדריך"): one evergreen ManyChat automation
-  // covers every post, zero daily maintenance.
-  const KEYWORD = 'מדריך';
+  // trigger. The keyword MUST be one of Shay's 6 configured ManyChat triggers; the model
+  // picks the one that best fits the post, code validates and falls back to "מדריך".
+  const ALLOWED_KW = ['מדריך', 'סקיל', 'שלח', 'שגר', 'AI', 'SEO'];
+  const KEYWORD = (content.cta_keyword && ALLOWED_KW.indexOf(String(content.cta_keyword).trim()) >= 0)
+    ? String(content.cta_keyword).trim() : 'מדריך';
+  const SITE = 'https://pinkmedia.co.il';
   const cta = content.slides[6];
   cta.type = 'cta';
   cta.pill = KEYWORD;
@@ -191,7 +194,11 @@ async function genStockPhoto(query) {
     // never ship a comment bait without a deliverable: fall back to the slides' content
     content.dm_guide = content.slides.slice(1, 6)
       .map((s, i) => (i + 1) + '. ' + String(s.h || '').replace(/<[^>]+>/g, '') + '\n' + String(s.sub || ''))
-      .concat(['רוצה שנבנה לך את זה בעסק? כתבו כאן "מעוניין" ונדבר.']);
+      .concat(['המדריך המלא והכלים באתר: ' + SITE, 'רוצה שנבנה לך את זה בעסק? כתבו כאן "מעוניין" ונדבר.']);
+  }
+  // the guide always points to the Pink Media site — append the link if the model omitted it
+  if (Array.isArray(content.dm_guide) && content.dm_guide.length && !content.dm_guide.some((b) => /pinkmedia\.co\.il/.test(String(b)))) {
+    content.dm_guide.splice(Math.max(0, content.dm_guide.length - 1), 0, 'המדריך המלא, הכלים והדוגמאות מחכים לך כאן: ' + SITE);
   }
   if (process.env.DRY_RUN === '1') { console.log('=== DRY RUN CONTENT ===\n' + JSON.stringify(content, null, 2)); process.exit(0); }
 
