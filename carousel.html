@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;800;900&family=Heebo:wght@300;500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   html,body{width:1080px}
@@ -13,218 +13,119 @@
   body.solo .slide{display:none}
   body.solo .slide.on{display:block}
 
-  /* ===== EDITORIAL MAGAZINE SYSTEM — giant serif type, dark page, rotating accent =====
-     base/ink stay constant for a cohesive masthead; only --hit (accent) rotates daily. */
-  .t-ink{--hit:#FF2E88}
-  .t-cream{--hit:#C6FF1E}
-  .t-acid{--hit:#27E5FF}
-  .t-blue{--hit:#00E5A0}
-  .t-sun{--hit:#FF8A1E}
-  .t-grape{--hit:#B57BFF}
-  .t-fire{--hit:#FF5242}
-  .t-cobalt{--hit:#5B86FF}
-  .t-gold{--hit:#FFD23D}
+  .slide{position:relative;width:1080px;height:1350px;overflow:hidden;font-family:"Heebo",sans-serif;
+    --pink:#FE00A3;--blue:#1240E8;--ink:#0F0F12;--paper:#FFFFFF;--grey:#9A9AA2}
 
-  .slide{position:relative;width:1080px;height:1350px;overflow:hidden;
-    --base:#0C0B0E;--ink:#F4F1EA;--muted:#9C978C;--line:rgba(244,241,234,.18);
-    background:var(--base);color:var(--ink);font-family:"Heebo",sans-serif}
+  /* top handle */
+  .top{position:absolute;top:58px;left:0;right:0;z-index:9;text-align:center;
+    font-family:"Space Mono",monospace;font-weight:700;font-size:24px;color:var(--grey);direction:ltr;unicode-bidi:isolate}
+  .top b{color:var(--ink)}
 
-  /* hairline page frame with a single accent tab — the magazine border */
-  .frame{position:absolute;inset:46px;border:1px solid var(--line);z-index:7;pointer-events:none}
-  .frame::before{content:"";position:absolute;right:-1px;top:62px;width:64px;height:5px;background:var(--hit)}
+  /* footer */
+  .foot{position:absolute;left:64px;right:64px;bottom:52px;z-index:9;display:flex;align-items:center;justify-content:space-between}
+  .save{display:flex;align-items:center;gap:12px;font-weight:800;font-size:26px}
+  .save svg{width:30px;height:30px}
+  .ig{display:flex;align-items:center;gap:13px;font-family:"Space Mono",monospace;font-weight:700;font-size:24px;direction:ltr;unicode-bidi:isolate}
+  .igm{width:38px;height:38px;border-radius:11px;border:3px solid currentColor;position:relative;flex:none}
+  .igm::before{content:"";position:absolute;inset:8px;border:3px solid currentColor;border-radius:50%}
+  .igm::after{content:"";position:absolute;top:7px;right:7px;width:6px;height:6px;border-radius:50%;background:currentColor}
+  .dots{position:absolute;left:0;right:0;bottom:28px;z-index:9;display:flex;gap:9px;justify-content:center}
+  .dots i{width:8px;height:8px;border-radius:50%;background:var(--grey);opacity:.4}
+  .dots i.on{opacity:1;width:26px;border-radius:5px;background:var(--pink)}
 
-  .grain{position:absolute;inset:0;z-index:6;opacity:.05;mix-blend-mode:screen;pointer-events:none;
-    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>")}
+  /* ultra-heavy multi-color headline */
+  .hl{position:absolute;z-index:7;left:70px;right:70px;font-weight:900;line-height:.93;
+    letter-spacing:-.03em;text-align:center;color:var(--ink);-webkit-text-stroke:1.5px var(--ink)}
+  .hl .l{display:block}
+  .hl .c1,.hl mark{color:var(--pink);-webkit-text-stroke-color:var(--pink);background:transparent}
+  .hl .c2{color:var(--grey);-webkit-text-stroke-color:var(--grey)}
+  .sub{position:absolute;z-index:7;left:100px;right:100px;text-align:center;font-weight:700;font-size:40px;line-height:1.4;color:var(--ink)}
+  .sub b{color:var(--pink)}
 
-  /* ---- masthead ---- */
-  .head{position:absolute;top:74px;left:78px;right:78px;z-index:9;display:flex;
-    justify-content:space-between;align-items:baseline}
-  .sec{font-family:"Space Mono",monospace;font-size:21px;font-weight:700;letter-spacing:.30em;
-    text-transform:uppercase;color:var(--muted)}
-  .sec b{color:var(--ink)}
-  .folio{font-family:"Frank Ruhl Libre",serif;font-weight:500;font-size:28px;color:var(--muted);
-    direction:ltr;unicode-bidi:isolate}
-  .folio b{color:var(--hit);font-weight:800}
+  .burst{position:absolute;z-index:5;pointer-events:none;filter:drop-shadow(0 16px 28px rgba(254,0,163,.26))}
 
-  /* ---- hero image plate ---- */
-  .plate{position:absolute;z-index:1;overflow:hidden;background:#000}
-  .plate .img{position:absolute;inset:0;background-size:cover;background-position:center;
-    filter:grayscale(.16) contrast(1.08) saturate(1.06) brightness(.96)}
-  .plate.real .img{filter:grayscale(.05) contrast(1.04) saturate(1.04) brightness(.98)}
-  .plate .duo{position:absolute;inset:0;background:var(--hit);mix-blend-mode:color;opacity:.13}
-  .plate .vig{position:absolute;inset:0}
-  .plate.empty{background:var(--base)}
-  .plate.empty .big{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    font-family:"Frank Ruhl Libre",serif;font-weight:900;font-size:520px;color:var(--hit);opacity:.10}
+  /* WHITE poster (cover + content) */
+  .poster{background:var(--paper)}
+  .poster .save,.poster .ig{color:var(--ink)}
 
-  .cap{position:absolute;z-index:9;font-family:"Frank Ruhl Libre",serif;font-style:italic;
-    font-size:24px;color:var(--muted);max-width:760px}
-  .cap::before{content:"";display:inline-block;width:26px;height:2px;background:var(--hit);
-    vertical-align:middle;margin-left:12px;margin-bottom:6px}
+  /* COMMENT CTA */
+  .cta{background:var(--paper)}
+  .cta .lab{position:absolute;z-index:7;left:0;right:0;top:210px;text-align:center;font-weight:800;font-size:60px;color:var(--ink)}
+  .cta .kw{position:absolute;z-index:7;left:40px;right:40px;top:280px;text-align:center;font-weight:900;font-size:190px;
+    color:var(--pink);-webkit-text-stroke:3px var(--pink);letter-spacing:-.03em;line-height:.95}
+  .cta .sub{top:560px}
+  .cta .burst{left:50%;top:790px;transform:translate(-50%,-50%)}
+  .cta .btn{position:absolute;z-index:7;left:50%;top:1000px;transform:translateX(-50%);width:118px;height:118px;
+    border-radius:50%;border:7px solid var(--pink);background:#fff}
+  .cta .save,.cta .ig{color:var(--ink)}
 
-  /* ---- body / headline ---- */
-  .body{position:absolute;left:78px;right:78px;z-index:9;display:flex;flex-direction:column;overflow:hidden}
-  .kick{display:inline-block;align-self:flex-start;font-family:"Space Mono",monospace;font-size:22px;
-    font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--hit);margin-bottom:24px}
-  h1,h2{font-family:"Frank Ruhl Libre",serif;font-weight:900;letter-spacing:-.01em;color:var(--ink)}
-  h1{font-size:140px;line-height:.95}
-  h2{font-size:96px;line-height:1.0}
-  mark{background:transparent;color:var(--hit);position:relative;white-space:nowrap}
-  mark::after{content:"";position:absolute;left:0;right:0;bottom:.05em;height:.09em;background:var(--hit);
-    opacity:.92;z-index:-1}
-  .deck{margin-top:32px;font-family:"Heebo",sans-serif;font-weight:500;font-size:38px;line-height:1.4;
-    color:var(--ink);max-width:880px;padding-right:24px;border-right:3px solid var(--hit)}
-  .deck b{font-weight:900}
-
-  /* ---- bottom folio ---- */
-  .foot{position:absolute;left:78px;right:78px;bottom:72px;z-index:9;display:flex;
-    align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:20px}
-  .who{display:flex;align-items:center;gap:16px}
-  .who .logo{height:30px;width:auto;display:block;opacity:.95}
-  .who .hdl{font-family:"Space Mono",monospace;font-size:22px;font-weight:700;letter-spacing:.04em;
-    color:var(--ink);direction:ltr;unicode-bidi:isolate}
-  .who .hdl span{color:var(--muted)}
-  .swipe{font-family:"Space Mono",monospace;font-size:21px;font-weight:700;color:var(--muted);
-    letter-spacing:.1em}
-  .swipe b{color:var(--hit);font-size:26px}
-  .prog{display:flex;gap:8px;align-items:center}
-  .prog i{width:24px;height:3px;background:var(--line);display:block}
-  .prog i.on{background:var(--hit);width:40px}
-
-  /* giant ghost folio numeral behind interior type */
-  .idx{position:absolute;z-index:2;font-family:"Frank Ruhl Libre",serif;font-weight:900;
-    font-size:300px;line-height:.7;color:transparent;-webkit-text-stroke:1px var(--line);
-    opacity:.6;user-select:none;pointer-events:none;direction:ltr}
-
-  /* ===== COVER (hook): full-bleed photo, giant type bottom ===== */
-  .cover .plate{inset:0}
-  .cover .plate .vig{background:
-    linear-gradient(180deg,rgba(12,11,14,.28) 0%,rgba(12,11,14,0) 30%,rgba(12,11,14,.55) 62%,var(--base) 94%)}
-  .cover .body{top:560px;bottom:150px;justify-content:flex-end}
-  .cover .cap{display:none}
-  .cover .idx{display:none}
-
-  /* ===== INTERIOR (content): photo plate top, giant type below ===== */
-  .interior .plate{left:46px;right:46px;top:138px;height:512px}
-  .interior .plate .vig{background:
-    linear-gradient(180deg,rgba(12,11,14,.12) 0%,rgba(12,11,14,0) 64%,var(--base) 100%)}
-  .interior .cap{left:78px;right:78px;top:596px}
-  .interior .idx{left:56px;top:678px}
-  .interior .body{top:702px;bottom:140px;justify-content:flex-start}
-  .interior h2{font-size:92px}
-
-  /* ===== CTA (back cover): dimmed photo, question + editorial comment bar ===== */
-  .cta .plate{inset:0}
-  .cta .plate .img{filter:grayscale(.42) contrast(1.04) brightness(.46)}
-  .cta .plate .vig{background:linear-gradient(180deg,rgba(12,11,14,.52),rgba(12,11,14,.86))}
-  .cta .body{top:286px;bottom:140px;justify-content:flex-start}
-  .cta h1{font-size:104px;line-height:1.0}
-  .cta .idx{display:none}
-  .cbar{display:flex;align-items:center;gap:22px;margin-top:50px;background:var(--ink);color:var(--base);
-    padding:24px 30px;max-width:884px;box-shadow:16px 16px 0 var(--hit)}
-  .cbar .av{width:72px;height:72px;border-radius:50%;flex:none;
-    background:radial-gradient(circle at 32% 30%,var(--hit),#15151A 130%)}
-  .cbar .w{font-family:"Frank Ruhl Libre",serif;font-weight:900;font-size:56px;line-height:1}
-  .cbar .car{width:5px;height:58px;background:var(--hit);flex:none}
-  .cbar .snd{margin-inline-start:auto;display:flex;align-items:center;gap:10px;
-    font-family:"Space Mono",monospace;font-weight:700;font-size:23px;letter-spacing:.08em;text-transform:uppercase}
-  .cbar .snd svg{width:30px;height:30px;display:block}
-  .ctanote{margin-top:28px;font-family:"Heebo",sans-serif;font-weight:700;font-size:34px;color:var(--ink);
-    display:flex;align-items:center;gap:14px}
-  .ctanote b{color:var(--hit)}
-  .ctanote .dm{display:inline-flex;align-items:center;justify-content:center;flex:none;width:56px;height:56px;
-    border-radius:50%;border:2px solid var(--hit);color:var(--hit)}
-  .ctanote .dm svg{width:28px;height:28px;display:block}
-
-  /* English (LTR) tweaks for the LinkedIn variant */
-  [dir=ltr] .sec{letter-spacing:.22em}
-  [dir=ltr] .deck{border-right:0;border-left:3px solid var(--hit);padding-right:0;padding-left:24px}
-  [dir=ltr] .cap::before{margin-left:0;margin-right:12px}
-  [dir=ltr] h1,[dir=ltr] h2{letter-spacing:-.015em}
+  /* English LTR */
+  [dir=ltr] .top,[dir=ltr] .ig{direction:ltr}
+  [dir=ltr] .cta .lab{direction:ltr}
 </style>
 </head>
 <body>
-<script id="data" type="application/json">{"theme":"t-ink","layout":"cover","brand":{"handle":"@bankhaltershay","sub":"PINK MEDIA"},"slides":[]}</script>
+<script id="data" type="application/json">{"theme":"t-ink","brand":{"handle":"@bankhaltershay"},"slides":[]}</script>
 <div id="root"></div>
 <script>
   (function(){
     var D=JSON.parse(document.getElementById('data').textContent);
-    var THEMES=['t-ink','t-cream','t-acid','t-blue','t-sun','t-grape','t-fire','t-cobalt','t-gold'];
-    var theme=THEMES.indexOf(D.theme)>=0?D.theme:'t-ink';
-    var B=D.brand||{},S=D.slides||[],N=S.length,bg=D.bg||'';
-    var real=D.bgreal?' real':'';
+    var B=D.brand||{},S=D.slides||[],N=S.length;
     var EN=(D.lang==='en');
     if(EN){document.documentElement.setAttribute('dir','ltr');document.documentElement.setAttribute('lang','en');}
-    var LOGO='https://res.cloudinary.com/duhfkgxer/image/upload/pink_carousel/pink_logo_main.png';
-    var SECTION=EN?'AI & MARKETING':'AI ושיווק';
-    var pad=function(n){return (n<10?'0':'')+n;};
-    var SEND='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>';
-    var DMIC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.6 0-3.1-.4-4.4-1.2L3 20l1.2-5.1A8.5 8.5 0 1 1 21 11.5z"/></svg>';
+    var HANDLE=B.handle||'@bankhaltershay';
+    function burst(size){var cx=size/2,cy=size/2,rO=size/2,rM=size*0.34,rI=size*0.14,p=[],q=[],spikes=14;
+      for(var i=0;i<spikes*2;i++){var r=(i%2===0)?rO:rM;var a=(Math.PI/spikes)*i-Math.PI/2;p.push((cx+r*Math.cos(a)).toFixed(1)+","+(cy+r*Math.sin(a)).toFixed(1));}
+      for(var j=0;j<10;j++){var r2=(j%2===0)?rM*0.8:rI;var a2=(Math.PI/5)*j-Math.PI/2;q.push((cx+r2*Math.cos(a2)).toFixed(1)+","+(cy+r2*Math.sin(a2)).toFixed(1));}
+      return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'"><defs><linearGradient id="g'+size+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FE00A3"/><stop offset="1" stop-color="#FF5FC4"/></linearGradient></defs><polygon points="'+p.join(' ')+'" fill="url(#g'+size+')"/><polygon points="'+q.join(' ')+'" fill="#1240E8"/></svg>';}
+    var SAVE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>';
+    function topbar(){return '<div class="top"><b>'+HANDLE+'</b> | '+(EN?'Pink Media':'פינק מדיה')+'</div>';}
+    function foot(i){var d='';for(var k=0;k<N;k++)d+='<i class="'+(k===i?'on':'')+'"></i>';
+      return '<div class="foot"><div class="ig"><span class="igm"></span>'+HANDLE+'</div>'
+        +'<div class="save">'+SAVE+(EN?'SAVE FOR LATER':'שמרו לאחר כך')+'</div></div><div class="dots">'+d+'</div>';}
+    // heavy multi-color headline: split into lines (white/pink/grey), leading number + <mark> pink
+    function hl(h){var lines=String(h||'').split('\n').map(function(x){return x.trim();}).filter(Boolean);
+      if(lines.length===1){var w=lines[0].split(' ');if(w.length>=4){var per=Math.ceil(w.length/(w.length>7?3:2)),out=[];for(var j=0;j<w.length;j+=per)out.push(w.slice(j,j+per).join(' '));lines=out;}}
+      return lines.map(function(t,ix){
+        var hasMark=/<mark>/.test(t);
+        var cls=(ix===1&&!hasMark)?'l c1':(ix===2&&!hasMark?'l c2':'l');
+        // color a leading number pink when the line itself is not already accented
+        if(cls==='l') t=t.replace(/^(\s*<mark>[\s\S]*?<\/mark>|\s*\d+[%+]?)/,function(m){return /mark/.test(m)?m:'<mark>'+m.trim()+'</mark>';});
+        return '<span class="'+cls+'">'+t+'</span>';
+      }).join('');}
+
     var root=document.getElementById('root');
-
     S.forEach(function(s,i){
-      var n=i+1,isHook=s.type==='hook',isCta=s.type==='cta';
-      var mode=isHook?'cover':(isCta?'cta':'interior');
-      var showImg=!!bg;
-      var div=document.createElement('div');
-      div.className='slide '+theme+' '+mode;
+      var n=i+1,div=document.createElement('div'),inner='';
       div.id='s'+n;
-
-      var plateInner = showImg
-        ? '<div class="img" style="background-image:url(\''+bg+'\')"></div><div class="duo"></div><div class="vig"></div>'
-        : '<div class="big">'+pad(n)+'</div>';
-      var plate='<div class="plate'+real+(showImg?'':' empty')+'">'+plateInner+'</div>';
-
-      var bodyInner;
-      if(isCta){
+      if(s.type==='cta'){
+        div.className='slide cta';
         var kw=s.pill||(EN?'GUIDE':'מדריך');
-        var note=s.sub||(EN?'Comment "'+kw+'" and I will send it to your DM':'תגיבו "'+kw+'" ואני שולח לכם אותו ישר ל-DM');
-        bodyInner='<span class="kick">'+(s.kicker||'PINK MEDIA')+'</span>'
-          +'<h1>'+(s.h||'')+'</h1>'
-          +'<div class="cbar"><span class="av"></span><span class="w">'+kw+'</span><span class="car"></span>'
-          +'<span class="snd">'+(EN?'SEND':'שליחה')+SEND+'</span></div>'
-          +'<div class="ctanote"><span class="dm">'+DMIC+'</span><span>'+note+'</span></div>';
+        var note=s.sub||(EN?'Comment "'+kw+'" and I send it to your DM':'תגיבו "'+kw+'" ואני שולח לכם אותו ישר ל-DM');
+        inner=topbar()+'<div class="lab">'+(EN?'Comment':'תגיבו')+'</div>'
+          +'<div class="kw">"'+kw+'"</div>'
+          +'<div class="sub">'+note+'</div>'
+          +'<div class="burst" style="width:230px;height:230px">'+burst(230)+'</div>'
+          +'<div class="btn"></div>'+foot(i);
       } else {
-        var tag=isHook?'h1':'h2';
-        bodyInner='<span class="kick">'+(s.kicker||s.eyebrow||'')+'</span>'
-          +'<'+tag+'>'+(s.h||'')+'</'+tag+'>'
-          +(s.sub?'<div class="deck">'+s.sub+'</div>':'');
+        var isHook=(s.type==='hook');
+        div.className='slide poster';
+        inner=topbar()
+          +'<div class="hl" style="top:'+(isHook?'220':'250')+'px;font-size:'+(isHook?'168':'130')+'px">'+hl(s.h)+'</div>'
+          +(s.sub?'<div class="sub" style="top:'+(isHook?'1110':'860')+'px">'+s.sub+'</div>':'')
+          +(isHook?'<div class="burst" style="left:50%;top:1010px;transform:translate(-50%,-50%);width:170px;height:170px">'+burst(170)+'</div>':'')
+          +foot(i);
       }
-
-      div.innerHTML=
-        plate
-        +'<div class="grain"></div><div class="frame"></div>'
-        +'<div class="head"><div class="sec">PINK MEDIA — <b>'+SECTION+'</b></div>'
-        +'<div class="folio">№ <b>'+pad(n)+'</b> / '+pad(N)+'</div></div>'
-        +(mode==='interior'?'<div class="idx">'+pad(n)+'</div>'+(s.eyebrow?'<div class="cap">'+s.eyebrow+'</div>':''):'')
-        +'<div class="body">'+bodyInner+'</div>'
-        +'<div class="foot"><div class="who"><img class="logo" src="'+LOGO+'" alt="Pink">'
-        +'<span class="hdl">'+(B.handle||'@bankhaltershay')+' <span>· '+(EN?'Pink Media':'פינק מדיה')+'</span></span></div>'
-        +(isCta
-            ? '<div class="prog">'+S.map(function(_,k){return '<i class="'+(k===i?'on':'')+'"></i>';}).join('')+'</div>'
-            : (n<N?'<div class="swipe">'+(EN?'SWIPE <b>&#8594;</b>':'החליקו <b>&#8592;</b>')+'</div>':'<div class="prog">'+S.map(function(_,k){return '<i class="'+(k===i?'on':'')+'"></i>';}).join('')+'</div>'))
-        +'</div>';
-      root.appendChild(div);
+      div.innerHTML=inner;root.appendChild(div);
     });
 
     var hsh=location.hash.replace('#','');
     if(hsh){document.body.classList.add('solo');var el=document.getElementById(hsh);if(el)el.classList.add('on');}
-
-    // auto-fit: shrink headline (and deck) until everything fits its body zone — nothing ever clips
-    function fit(){
-      document.querySelectorAll('.slide').forEach(function(sl){
-        if(sl.offsetParent===null && !document.body.classList.contains('solo')) {}
-        var head=sl.querySelector('h1,h2'), body=sl.querySelector('.body');
-        if(!head||!body) return;
-        var sz=parseFloat(getComputedStyle(head).fontSize), g=0;
-        while(g++<200 && sz>34 && (head.scrollWidth>head.clientWidth+1 || body.scrollHeight>body.clientHeight+1)){
-          sz-=3; head.style.fontSize=sz+'px';
-        }
-        var deck=sl.querySelector('.deck'), d=0;
-        if(deck){ var ds=parseFloat(getComputedStyle(deck).fontSize);
-          while(d++<90 && ds>20 && body.scrollHeight>body.clientHeight+1){ ds-=2; deck.style.fontSize=ds+'px'; } }
-      });
-    }
+    function fit(){document.querySelectorAll('.slide').forEach(function(sl){
+      var h=sl.querySelector('.hl');if(!h)return;
+      var sz=parseFloat(getComputedStyle(h).fontSize),g=0;
+      while(g++<170 && sz>40 && (h.scrollWidth>h.clientWidth+1 || h.scrollHeight>h.offsetHeight+1 && h.scrollHeight>520)){sz-=3;h.style.fontSize=sz+'px';}
+    });}
     if(document.fonts&&document.fonts.ready){document.fonts.ready.then(fit);}else{fit();}
   })();
 </script>
