@@ -114,6 +114,16 @@ async function genStockPhoto(query) {
 }
 
 (async () => {
+  // Idempotency: if a post for today is already queued and not yet published, skip
+  // (so a manual verification run + the daily cron never double-post). FORCE=1 overrides.
+  if (process.env.FORCE !== '1') {
+    try {
+      const q = await fetch('https://eu1.make.com/api/v2/data-stores/124678/data?pg%5Blimit%5D=100', { headers: { 'Authorization': 'Token ' + process.env.MAKE_API_TOKEN } });
+      const qj = await q.json();
+      const dup = (qj.records || []).some((r) => r.data && r.data.date === date && r.data.posted !== true);
+      if (dup) { console.log('SKIP: a post for ' + date + ' is already queued (unposted). Use FORCE=1 to override.'); return; }
+    } catch (e) { console.log('idempotency check skipped: ' + e.message); }
+  }
   const doy = Math.floor((Date.parse(date + 'T00:00:00Z') - Date.parse(date.slice(0, 4) + '-01-01T00:00:00Z')) / 86400000);
   // variety: collect recent posts' topics so the model does not repeat itself
   let avoid = [];
